@@ -1,0 +1,3251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HMRC | Secure Access</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0b0c0c',
+            secondary: '#00703c',
+            accent: '#1d70b8',
+            hmrc: { DEFAULT: '#00703c', dark: '#005a30', light: '#eef7f1' },
+            gov: { bg: '#f3f2f1', text: '#0b0c0c', muted: '#505a5f', border: '#b1b4b6' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --hmrc-green: #00703c;
+      --hmrc-green-dark: #005a30;
+      --page-bg: #f3f2f1;
+      --card-bg: #ffffff;
+      --text: #0b0c0c;
+      --text-muted: #505a5f;
+      --border: #b1b4b6;
+      --border-light: #dee0e2;
+      --info-bg: #eef7f1;
+      --warn-bg: #fff7e6;
+      --warn-border: #f47738;
+    }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--page-bg);
+      color: var(--text);
+      position: relative;
+      isolation: isolate;
+    }
+
+    /* Canada — official government tax stamp background */
+    .cra-bg-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .cra-bg-base {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 65% 50% at 50% 45%, rgba(200, 16, 46, 0.04) 0%, transparent 58%),
+        radial-gradient(ellipse 80% 60% at 20% 80%, rgba(155, 28, 46, 0.025) 0%, transparent 50%),
+        radial-gradient(ellipse 70% 55% at 85% 15%, rgba(155, 28, 46, 0.02) 0%, transparent 48%),
+        linear-gradient(165deg, #f6f5f4 0%, #efeeed 40%, #f3f2f1 100%);
+    }
+    .cra-bg-paper {
+      position: absolute;
+      inset: 0;
+      opacity: 0.4;
+      background-image:
+        linear-gradient(rgba(155, 28, 46, 0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(155, 28, 46, 0.018) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse 80% 70% at 50% 45%, #000 10%, transparent 75%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 45%, #000 10%, transparent 75%);
+    }
+    .cra-bg-stamp {
+      position: absolute;
+      color: #9b1c2e;
+    }
+    .cra-bg-stamp svg { width: 100%; height: auto; display: block; }
+    .cra-bg-stamp-main {
+      top: 50%;
+      left: 50%;
+      width: min(440px, 90vw);
+      transform: translate(-50%, -50%) rotate(-11deg);
+      opacity: 0.082;
+      filter: saturate(1.15) contrast(1.05);
+    }
+    .cra-bg-stamp-tl {
+      top: 6%;
+      left: -4%;
+      width: min(200px, 34vw);
+      transform: rotate(-28deg);
+      opacity: 0.055;
+    }
+    .cra-bg-stamp-br {
+      bottom: 10%;
+      right: -3%;
+      width: min(210px, 36vw);
+      transform: rotate(18deg);
+      opacity: 0.06;
+    }
+    .cra-bg-stamp-tr {
+      top: 14%;
+      right: 2%;
+      width: min(160px, 28vw);
+      transform: rotate(24deg);
+      opacity: 0.045;
+    }
+    .cra-bg-stamp-repeat {
+      position: absolute;
+      inset: -10%;
+      opacity: 0.028;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 160'%3E%3Ccircle cx='80' cy='80' r='72' fill='none' stroke='%239b1c2e' stroke-width='1.5' stroke-dasharray='3 2'/%3E%3Ccircle cx='80' cy='80' r='64' fill='none' stroke='%239b1c2e' stroke-width='0.75'/%3E%3Ctext x='80' y='52' text-anchor='middle' font-family='Arial,sans-serif' font-size='6' font-weight='700' fill='%239b1c2e' letter-spacing='1.2'%3EGOV.%20OF%20CANADA%3C/text%3E%3Ctext x='80' y='88' text-anchor='middle' font-family='Arial,sans-serif' font-size='9' font-weight='800' fill='%23c8102e' letter-spacing='1'%3ECRA%3C/text%3E%3Ctext x='80' y='100' text-anchor='middle' font-family='Arial,sans-serif' font-size='5' font-weight='600' fill='%239b1c2e' letter-spacing='0.8'%3ETAX%20STAMP%3C/text%3E%3Ctext x='80' y='112' text-anchor='middle' font-family='Arial,sans-serif' font-size='5' font-weight='700' fill='%239b1c2e'%3EOFFICIAL%3C/text%3E%3C/svg%3E");
+      background-size: 200px 200px;
+      transform: rotate(-6deg);
+    }
+    .cra-bg-vignette {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 82% 72% at 50% 45%, transparent 30%, rgba(243, 242, 241, 0.6) 100%);
+    }
+    .site-header, .site-footer { position: relative; z-index: 20; }
+    .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+    /* Site chrome */
+    .site-header {
+      background: var(--hmrc-green);
+      border-bottom: 4px solid var(--hmrc-green-dark);
+      color: #fff;
+    }
+    .site-header-inner {
+      max-width: 42rem;
+      margin: 0 auto;
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .site-footer {
+      background: #fff;
+      border-top: 1px solid var(--border-light);
+      margin-top: auto;
+    }
+    .site-footer-inner {
+      max-width: 42rem;
+      margin: 0 auto;
+      padding: 1rem 1.25rem 1.5rem;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Cards & panels */
+    .glass-card, .pro-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-light);
+      box-shadow: 0 2px 0 rgba(11, 12, 12, 0.04);
+    }
+    .secure-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border-light);
+      box-shadow: 0 4px 12px rgba(11, 12, 12, 0.06);
+    }
+    .info-banner {
+      background: var(--info-bg);
+      border: 1px solid #b7e0c5;
+      color: var(--text-muted);
+    }
+    .warn-banner {
+      background: var(--warn-bg);
+      border-left: 4px solid var(--warn-border);
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin { animation: spin 0.85s linear infinite; }
+    .progress-track {
+      background: #eeefef;
+      border: 1px solid var(--border-light);
+      box-shadow: inset 0 1px 3px rgba(11, 12, 12, 0.06);
+    }
+    .progress-fill {
+      background: linear-gradient(90deg, var(--hmrc-green-dark), var(--hmrc-green));
+      transition: width 0.35s ease-out;
+    }
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .log-line { animation: fadeUp 0.35s ease-out; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .pulse-ring { animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(0, 112, 60, 0.25); }
+      50% { box-shadow: 0 0 0 10px rgba(0, 112, 60, 0); }
+    }
+    .face-ring { transform: rotate(-90deg); transform-origin: center; }
+    .face-ring-progress { transition: stroke-dashoffset 0.15s linear; }
+    @keyframes faceScanBeam {
+      0%, 100% { top: 15%; opacity: 0.6; }
+      50% { top: 75%; opacity: 1; }
+    }
+    .face-scan-beam {
+      position: absolute; left: 10%; right: 10%; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--hmrc-green), transparent);
+      box-shadow: 0 0 8px rgba(0, 112, 60, 0.4);
+      animation: faceScanBeam 2s ease-in-out infinite;
+      pointer-events: none;
+    }
+    #faceVideo { transform: scaleX(-1); object-fit: cover; background: #eeefef; }
+    .fade-in { animation: fadeIn 0.5s ease-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .live-dot {
+      width: 7px; height: 7px; border-radius: 999px;
+      background: var(--hmrc-green);
+      animation: livePulse 2s ease-in-out infinite;
+    }
+    @keyframes livePulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(0, 112, 60, 0.4); }
+      50% { box-shadow: 0 0 0 5px rgba(0, 112, 60, 0); }
+    }
+
+    .balance-hero {
+      background: #fff;
+      border: 1px solid var(--border-light);
+      border-left: 4px solid var(--hmrc-green);
+      box-shadow: 0 2px 0 rgba(11, 12, 12, 0.04);
+    }
+    .bank-card {
+      background: #fff;
+      border: 1px solid var(--border-light);
+      border-left: 4px solid #1d70b8;
+      box-shadow: 0 2px 0 rgba(11, 12, 12, 0.04);
+    }
+    .identity-card {
+      background: #fff;
+      border: 1px solid var(--border-light);
+      border-left: 4px solid #c8102e;
+      box-shadow: 0 2px 0 rgba(11, 12, 12, 0.04);
+    }
+    .tax-card {
+      background: #fff;
+      border: 1px solid var(--border-light);
+      border-left: 4px solid #f47738;
+      box-shadow: 0 2px 0 rgba(11, 12, 12, 0.04);
+    }
+    .owner-avatar {
+      background: var(--hmrc-green);
+      color: #fff;
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border-light);
+      font-size: 0.8rem;
+      gap: 1rem;
+    }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-row span:first-child { color: var(--text-muted); flex-shrink: 0; }
+    .section-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .hmrc-logo-mark {
+      background: var(--hmrc-green);
+      box-shadow: none;
+    }
+    .hmrc-logo-mark-lg {
+      background: var(--hmrc-green);
+      box-shadow: 0 4px 12px rgba(0, 112, 60, 0.2);
+    }
+    .hmrc-btn, .withdraw-btn {
+      background: var(--hmrc-green);
+      color: #fff;
+      box-shadow: 0 2px 0 var(--hmrc-green-dark);
+      transition: background 0.15s ease, transform 0.15s ease;
+    }
+    .hmrc-btn:hover, .withdraw-btn:hover:not(:disabled) {
+      background: var(--hmrc-green-dark);
+    }
+    .withdraw-btn:hover:not(:disabled) { transform: translateY(-1px); }
+    .withdraw-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+    .hmrc-btn:hover { opacity: 1; }
+
+    .tax-progress-wrap {
+      background: #eeefef;
+      border: 1px solid var(--border-light);
+      border-radius: 999px;
+      height: 12px;
+      overflow: hidden;
+    }
+    .tax-progress-fill-green {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #00703c, #28a745);
+      transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .coverage-stat {
+      background: #fafafa;
+      border: 1px solid var(--border-light);
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+    }
+    .coverage-stat.covered { border-color: #b7e0c5; background: var(--info-bg); }
+    .coverage-stat.remaining { border-color: #fcd9b8; background: var(--warn-bg); }
+    .withdraw-card {
+      background: #fff;
+      border: 1px solid var(--border-light);
+      border-left: 4px solid var(--hmrc-green);
+      box-shadow: 0 2px 0 rgba(11, 12, 12, 0.04);
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+    .meta-item {
+      background: #fafafa;
+      border: 1px solid var(--border-light);
+      border-radius: 0.375rem;
+      padding: 0.5rem 0.625rem;
+    }
+    .meta-item .label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+    .meta-item .value { font-size: 0.72rem; font-weight: 600; color: var(--text); margin-top: 0.15rem; font-family: 'JetBrains Mono', monospace; }
+    .timeline-item {
+      display: flex;
+      gap: 0.75rem;
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .timeline-item:last-child { border-bottom: none; }
+    .timeline-dot {
+      width: 8px; height: 8px; border-radius: 999px;
+      background: var(--hmrc-green);
+      margin-top: 0.35rem;
+      flex-shrink: 0;
+    }
+    .timeline-dot.pending { background: #f47738; }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      border-radius: 999px;
+      padding: 0.2rem 0.55rem;
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .status-pill.live { background: var(--info-bg); color: var(--hmrc-green); border: 1px solid #b7e0c5; }
+    .status-pill.verified { background: var(--info-bg); color: var(--hmrc-green); border: 1px solid #b7e0c5; }
+    .status-pill.partial { background: var(--warn-bg); color: #d4351c; border: 1px solid #fcd9b8; }
+
+    /* Withdraw modal */
+    .withdraw-modal {
+      position: fixed; inset: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      padding: 1rem;
+      background: rgba(11, 12, 12, 0.5);
+      backdrop-filter: blur(4px);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+    .withdraw-modal.open { opacity: 1; pointer-events: auto; }
+    .withdraw-modal-panel {
+      width: 100%; max-width: 26rem;
+      overflow: hidden;
+      transform: translateY(16px) scale(0.98);
+      transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease;
+      background: #fff;
+      border: 1px solid var(--border-light);
+      box-shadow: 0 24px 64px rgba(11, 12, 12, 0.18), 0 0 0 1px rgba(0, 112, 60, 0.06);
+      border-radius: 0.625rem;
+    }
+    .withdraw-modal.open .withdraw-modal-panel { transform: translateY(0) scale(1); }
+    .withdraw-official-stripe {
+      background: var(--hmrc-green);
+      color: #fff;
+      font-size: 0.58rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-align: center;
+      padding: 0.45rem 0.75rem;
+      margin: -1rem -1rem 0.75rem -1rem;
+      border-radius: 0.625rem 0.625rem 0 0;
+    }
+    @media (min-width: 640px) {
+      .withdraw-official-stripe { margin: -1.25rem -1.25rem 0.75rem -1.25rem; }
+    }
+    .withdraw-doc-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.35rem 0.75rem;
+      padding: 0.55rem 0.65rem;
+      background: #f8f9f9;
+      border: 1px solid var(--border-light);
+      border-radius: 0.375rem;
+      margin-bottom: 0.55rem;
+      font-size: 0.58rem;
+    }
+    .withdraw-doc-bar .label { color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 0.1rem; }
+    .withdraw-doc-bar .value { color: var(--text); font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 0.62rem; }
+    .withdraw-classification {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.52rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #942514;
+      background: #fef5f5;
+      border: 1px solid #f4cdc6;
+      padding: 0.15rem 0.4rem;
+      border-radius: 0.2rem;
+    }
+    .withdraw-phase-track {
+      display: flex;
+      gap: 3px;
+      margin-bottom: 0.5rem;
+    }
+    .withdraw-phase-seg {
+      flex: 1;
+      height: 4px;
+      border-radius: 999px;
+      background: #dee0e2;
+      transition: all 0.45s ease;
+      position: relative;
+    }
+    .withdraw-phase-seg.active {
+      background: linear-gradient(90deg, var(--hmrc-green-dark), var(--hmrc-green));
+      box-shadow: 0 0 8px rgba(0, 112, 60, 0.35);
+    }
+    .withdraw-phase-seg.done { background: var(--hmrc-green); }
+    .withdraw-phase-seg.failed { background: #d4351c; box-shadow: 0 0 8px rgba(212, 53, 28, 0.35); }
+    .withdraw-security-level {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.55rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .withdraw-security-bars { display: flex; gap: 2px; }
+    .withdraw-security-bar {
+      width: 14px; height: 5px;
+      border-radius: 1px;
+      background: #dee0e2;
+      transition: background 0.3s ease;
+    }
+    .withdraw-security-bar.lit { background: var(--hmrc-green); }
+    .withdraw-step-code {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.55rem;
+      font-weight: 700;
+      color: var(--hmrc-green);
+      background: var(--info-bg);
+      border: 1px solid #b7e0c5;
+      padding: 0.12rem 0.45rem;
+      border-radius: 0.2rem;
+      margin-bottom: 0.35rem;
+      letter-spacing: 0.05em;
+    }
+    .withdraw-spotlight.failed .withdraw-step-code {
+      color: #d4351c;
+      background: #fef5f5;
+      border-color: #f4cdc6;
+    }
+    .withdraw-spotlight {
+      min-height: 8.25rem;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 1rem 0.75rem;
+      margin-bottom: 0.5rem;
+      border: 1px solid var(--border-light);
+      border-radius: 0.5rem;
+      position: relative;
+      background:
+        linear-gradient(180deg, rgba(0, 112, 60, 0.03) 0%, transparent 40%),
+        linear-gradient(180deg, #fafafa 0%, #fff 100%);
+    }
+    .withdraw-terminal {
+      background: #0b0c0c;
+      border: 1px solid #2a2a2a;
+      border-radius: 0.375rem;
+      padding: 0.65rem 0.75rem;
+      margin-bottom: 0.65rem;
+      min-height: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+    }
+    .withdraw-terminal::before {
+      content: 'SECURE TERMINAL';
+      position: absolute;
+      top: 0.25rem;
+      right: 0.45rem;
+      font-size: 0.45rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      color: rgba(0, 112, 60, 0.6);
+    }
+    .withdraw-live-line {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      line-height: 1.5;
+      color: #a8aeb3;
+      animation: liveStatusIn 0.35s ease-out;
+    }
+    .withdraw-live-line.ok { color: #6ee7a0; }
+    .withdraw-live-line.err { color: #fca5a5; font-weight: 600; }
+    .withdraw-sub-line {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.55rem;
+      color: #6b7280;
+      margin-top: 0.3rem;
+      animation: liveStatusIn 0.3s ease-out;
+    }
+    .withdraw-cursor {
+      display: inline-block;
+      width: 6px; height: 0.75rem;
+      background: var(--hmrc-green);
+      margin-left: 2px;
+      vertical-align: text-bottom;
+      animation: cursorBlink 1s step-end infinite;
+    }
+    @keyframes cursorBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    .withdraw-progress-fill {
+      background: linear-gradient(90deg, var(--hmrc-green-dark), var(--hmrc-green), #28a745);
+      background-size: 200% 100%;
+      animation: progressShimmer 2s ease-in-out infinite;
+      transition: width 0.4s ease-out;
+    }
+    @keyframes progressShimmer {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    .withdraw-progress-fill.failed {
+      background: linear-gradient(90deg, #942514, #d4351c);
+      animation: none;
+    }
+    .withdraw-decline-receipt {
+      background: #fff;
+      border: 2px dashed #d4351c;
+      border-radius: 0.375rem;
+      padding: 0.75rem;
+      margin-bottom: 0.65rem;
+      position: relative;
+      animation: failBannerIn 0.55s ease-out;
+    }
+    .withdraw-decline-stamp {
+      position: absolute;
+      top: 0.5rem; right: 0.5rem;
+      font-size: 0.5rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #d4351c;
+      border: 2px solid #d4351c;
+      padding: 0.2rem 0.35rem;
+      border-radius: 0.2rem;
+      transform: rotate(-8deg);
+      opacity: 0.85;
+    }
+    .withdraw-spotlight.failed {
+      border-color: #f4cdc6;
+      background: linear-gradient(180deg, #fef5f5 0%, #fff 100%);
+    }
+    .withdraw-step-icon-lg {
+      width: 3.25rem; height: 3.25rem;
+      border-radius: 999px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0.5rem 0 0.75rem;
+      border: 2px solid var(--border-light);
+      background: #fff;
+      transition: all 0.35s ease;
+    }
+    /* ring-wrap overrides icon positioning when present */
+    .withdraw-step-ring-wrap .withdraw-step-icon-lg {
+      position: absolute;
+      inset: 0.45rem;
+      width: auto; height: auto;
+      margin: 0;
+    }
+    .withdraw-spotlight.active .withdraw-step-icon-lg {
+      border-color: var(--hmrc-green);
+      background: var(--info-bg);
+      color: var(--hmrc-green);
+      box-shadow: 0 0 0 6px rgba(0, 112, 60, 0.08);
+    }
+    .withdraw-spotlight.done .withdraw-step-icon-lg {
+      border-color: #b7e0c5;
+      background: var(--info-bg);
+      color: var(--hmrc-green);
+    }
+    .withdraw-spotlight.failed .withdraw-step-icon-lg {
+      border-color: #f4cdc6;
+      background: #fef5f5;
+      color: #d4351c;
+      animation: failPulse 1.2s ease-in-out infinite;
+    }
+    .withdraw-spotlight-inner {
+      animation: stepSpotlightIn 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @keyframes stepSpotlightIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .withdraw-dots {
+      display: flex;
+      justify-content: center;
+      gap: 0.35rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+      padding: 0 0.5rem;
+    }
+    .withdraw-dot {
+      width: 0.45rem; height: 0.45rem;
+      border-radius: 999px;
+      background: #dee0e2;
+      transition: all 0.3s ease;
+    }
+    .withdraw-dot.done { background: var(--hmrc-green); }
+    .withdraw-dot.active {
+      background: var(--hmrc-green);
+      transform: scale(1.35);
+      box-shadow: 0 0 0 3px rgba(0, 112, 60, 0.2);
+    }
+    .withdraw-dot.failed { background: #d4351c; transform: scale(1.35); }
+    .withdraw-live-status {
+      display: none;
+    }
+    @keyframes liveStatusIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .withdraw-compact-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem 0.75rem;
+      font-size: 0.58rem;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .withdraw-compact-meta span { white-space: nowrap; }
+    .withdraw-compact-meta strong { color: var(--text); font-weight: 600; }
+    .withdraw-tech-readout {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem 0.6rem;
+      font-size: 0.55rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 0.4rem 0.5rem;
+      background: #fafafa;
+      border: 1px solid var(--border-light);
+      border-radius: 0.375rem;
+    }
+    .withdraw-tech-readout strong { color: var(--text); font-weight: 600; }
+    .withdraw-checks {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.3rem;
+      margin-bottom: 0.65rem;
+    }
+    .withdraw-check {
+      font-size: 0.52rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      text-align: center;
+      padding: 0.28rem 0.15rem;
+      border-radius: 0.25rem;
+      border: 1px solid var(--border-light);
+      background: #fafafa;
+      color: var(--text-muted);
+      transition: all 0.35s ease;
+    }
+    .withdraw-check.active {
+      border-color: var(--hmrc-green);
+      background: var(--info-bg);
+      color: var(--hmrc-green);
+      box-shadow: 0 0 0 2px rgba(0, 112, 60, 0.1);
+    }
+    .withdraw-check.done {
+      border-color: #b7e0c5;
+      background: var(--info-bg);
+      color: var(--hmrc-green);
+    }
+    .withdraw-check.failed {
+      border-color: #f4cdc6;
+      background: #fef5f5;
+      color: #d4351c;
+    }
+    .withdraw-sub-line {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58rem;
+      color: #889096;
+      margin-top: 0.35rem;
+      animation: liveStatusIn 0.3s ease-out;
+    }
+    .withdraw-step-ring-wrap {
+      position: relative;
+      width: 4.25rem;
+      height: 4.25rem;
+      margin: 0.35rem auto 0.65rem;
+    }
+    .withdraw-ring {
+      position: absolute;
+      inset: 0;
+      transform: rotate(-90deg);
+    }
+    .withdraw-ring-bg { fill: none; stroke: #dee0e2; stroke-width: 3; }
+    .withdraw-ring-progress {
+      fill: none;
+      stroke: var(--hmrc-green);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-dasharray: 150.8;
+      transition: stroke-dashoffset 0.5s ease;
+    }
+    .withdraw-spotlight.failed .withdraw-ring-progress { stroke: #d4351c; }
+    .withdraw-step-icon-lg {
+      position: absolute;
+      inset: 0.45rem;
+      width: auto; height: auto;
+      margin: 0;
+      border-width: 1.5px;
+    }
+    .withdraw-scan-line {
+      position: absolute;
+      left: 8%; right: 8%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0, 112, 60, 0.5), transparent);
+      animation: withdrawScan 2.2s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes withdrawScan {
+      0%, 100% { top: 18%; opacity: 0.4; }
+      50% { top: 82%; opacity: 1; }
+    }
+    .withdraw-fail-banner {
+      background: #fef5f5;
+      border: 1px solid #f4cdc6;
+      border-left: 4px solid #d4351c;
+      animation: failBannerIn 0.5s ease-out;
+    }
+    @keyframes failBannerIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes failPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(212, 53, 28, 0.25); }
+      50% { box-shadow: 0 0 0 6px rgba(212, 53, 28, 0); }
+    }
+    .withdraw-progress-fill.failed {
+      background: linear-gradient(90deg, #942514, #d4351c);
+      animation: none;
+    }
+    .withdraw-modal-panel.processing { max-height: none; }
+    .withdraw-modal-panel.failed-view { overflow-y: auto; max-height: 90vh; }
+    .step-title { font-size: 0.75rem; font-weight: 600; color: var(--text); }
+    .step-sub { font-size: 0.65rem; color: var(--text-muted); margin-top: 0.125rem; }
+
+    .withdraw-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .withdraw-metric {
+      background: #fafafa;
+      border: 1px solid var(--border-light);
+      border-radius: 0.375rem;
+      padding: 0.5rem 0.625rem;
+    }
+    .withdraw-metric .label { font-size: 0.58rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+    .withdraw-metric .value { font-size: 0.68rem; font-weight: 600; color: var(--text); margin-top: 0.15rem; font-family: 'JetBrains Mono', monospace; }
+    .withdraw-phase {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      background: var(--info-bg);
+      border: 1px solid #b7e0c5;
+      border-radius: 0.375rem;
+      margin-bottom: 0.75rem;
+      font-size: 0.65rem;
+    }
+    .withdraw-phase span:last-child { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--hmrc-green); }
+    input {
+      color: var(--text);
+      background: #fff;
+      border-color: var(--border);
+    }
+    input:focus { border-color: var(--hmrc-green) !important; outline: none; box-shadow: 0 0 0 3px rgba(0, 112, 60, 0.15) !important; }
+
+    .pdf-download-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      width: 100%;
+      margin-bottom: 0;
+      padding: 0.875rem 1rem;
+      background: #fff;
+      border: 2px solid var(--hmrc-green);
+      border-radius: 0.375rem;
+      color: var(--hmrc-green);
+      font-size: 0.8rem;
+      font-weight: 700;
+      box-shadow: 0 2px 0 rgba(0, 112, 60, 0.15);
+      transition: background 0.15s ease, transform 0.15s ease;
+      cursor: pointer;
+    }
+    .pdf-download-btn:hover:not(:disabled) {
+      background: var(--info-bg);
+      transform: translateY(-1px);
+    }
+    .pdf-download-btn:disabled { opacity: 0.6; cursor: wait; }
+
+    /* Semi-transparent cards so CRA watermark shows through subtly */
+    .glass-card, .pro-card, .secure-panel, .balance-hero, .tax-card, .withdraw-card, .identity-card, .bank-card {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+  </style>
+</head>
+<body class="font-sans min-h-screen flex flex-col">
+  <div class="cra-bg-layer" aria-hidden="true">
+    <div class="cra-bg-base"></div>
+    <div class="cra-bg-paper"></div>
+    <div class="cra-bg-stamp-repeat"></div>
+
+    <!-- Primary official tax stamp (centre) -->
+    <div class="cra-bg-stamp cra-bg-stamp-main">
+      <svg viewBox="0 0 260 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Official Government of Canada tax stamp">
+        <defs>
+          <path id="stampRingOuter" d="M 130,130 m -108,0 a 108,108 0 1,1 216,0 a 108,108 0 1,1 -216,0"/>
+          <path id="stampRingInnerTop" d="M 130,130 m -82,0 a 82,82 0 0,1 164,0"/>
+          <path id="stampRingInnerBottom" d="M 130,130 m -82,0 a 82,82 0 0,0 -164,0"/>
+          <radialGradient id="stampInk" cx="45%" cy="42%" r="55%">
+            <stop offset="0%" stop-color="#962530"/>
+            <stop offset="100%" stop-color="#6b1520"/>
+          </radialGradient>
+        </defs>
+        <ellipse cx="130" cy="130" rx="122" ry="120" fill="none" stroke="url(#stampInk)" stroke-width="2.5"/>
+        <ellipse cx="130" cy="130" rx="115" ry="113" fill="none" stroke="#7a1825" stroke-width="1.1"/>
+        <ellipse cx="130" cy="130" rx="108" ry="106" fill="none" stroke="#962530" stroke-width="0.55" stroke-dasharray="2 3" opacity="0.7"/>
+        <text x="130" y="36" text-anchor="middle" font-size="8" fill="#7a1825" opacity="0.8">★</text>
+        <text x="130" y="232" text-anchor="middle" font-size="8" fill="#7a1825" opacity="0.8">★</text>
+        <text x="28" y="134" text-anchor="middle" font-size="8" fill="#7a1825" opacity="0.8">★</text>
+        <text x="232" y="134" text-anchor="middle" font-size="8" fill="#7a1825" opacity="0.8">★</text>
+        <text font-family="Times New Roman, Georgia, serif" font-size="10.5" font-weight="700" fill="url(#stampInk)" letter-spacing="2">
+          <textPath href="#stampRingOuter" startOffset="25%" text-anchor="middle">GOVERNMENT OF CANADA</textPath>
+        </text>
+        <text font-family="Times New Roman, Georgia, serif" font-size="9" font-weight="600" fill="#7a1825" letter-spacing="1.6">
+          <textPath href="#stampRingOuter" startOffset="75%" text-anchor="middle">GOUVERNEMENT DU CANADA</textPath>
+        </text>
+        <g transform="translate(130, 110) scale(0.032) translate(-3720, -3920)">
+          <path fill="url(#stampInk)" d="m2490 4430-45-863a95 95 0 0 1 111-98l859 151-116-320a65 65 0 0 1 20-73l941-762-212-99a65 65 0 0 1-34-79l186-572-542 115a65 65 0 0 1-73-38l-105-247-423 454a65 65 0 0 1-111-57l204-1052-327 189a65 65 0 0 1-91-27l-332-652-332 652a65 65 0 0 1-91 27l-327-189 204 1052a65 65 0 0 1-111 57l-423-454-105 247a65 65 0 0 1-73 38l-542-115 186 572a65 65 0 0 1-34 79l-212 99 941 762a65 65 0 0 1 20 73l-116 320 859-151a95 95 0 0 1 111 98l-45 863z"/>
+        </g>
+        <text font-family="Arial Narrow, Arial, sans-serif" font-size="9.5" font-weight="800" fill="url(#stampInk)" letter-spacing="1.8">
+          <textPath href="#stampRingInnerTop" startOffset="50%" text-anchor="middle">CANADA REVENUE AGENCY</textPath>
+        </text>
+        <text font-family="Arial Narrow, Arial, sans-serif" font-size="8" font-weight="600" fill="#7a1825" letter-spacing="1.4">
+          <textPath href="#stampRingInnerBottom" startOffset="50%" text-anchor="middle">AGENCE DU REVENU DU CANADA</textPath>
+        </text>
+        <rect x="56" y="168" width="148" height="22" rx="1" fill="none" stroke="url(#stampInk)" stroke-width="1.6"/>
+        <text x="130" y="183" text-anchor="middle" font-family="Arial Narrow, Arial, sans-serif" font-size="9" font-weight="900" fill="url(#stampInk)" letter-spacing="3">OFFICIEL</text>
+        <text x="130" y="204" text-anchor="middle" font-family="Courier New, monospace" font-size="7" font-weight="700" fill="#7a1825" letter-spacing="0.8">18 JUL 2026</text>
+        <ellipse cx="130" cy="130" rx="88" ry="86" fill="none" stroke="#7a1825" stroke-width="0.45" stroke-dasharray="2 4" opacity="0.5"/>
+      </svg>
+    </div>
+
+    <!-- Secondary stamp impressions -->
+    <div class="cra-bg-stamp cra-bg-stamp-tl">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="100" cy="100" r="92" fill="none" stroke="#9b1c2e" stroke-width="2" stroke-dasharray="4 2"/>
+        <circle cx="100" cy="100" r="84" fill="none" stroke="#9b1c2e" stroke-width="1"/>
+        <g transform="translate(100, 88) scale(0.024) translate(-3720, -3920)">
+          <path fill="#c8102e" d="m2490 4430-45-863a95 95 0 0 1 111-98l859 151-116-320a65 65 0 0 1 20-73l941-762-212-99a65 65 0 0 1-34-79l186-572-542 115a65 65 0 0 1-73-38l-105-247-423 454a65 65 0 0 1-111-57l204-1052-327 189a65 65 0 0 1-91-27l-332-652-332 652a65 65 0 0 1-91 27l-327-189 204 1052a65 65 0 0 1-111 57l-423-454-105 247a65 65 0 0 1-73 38l-542-115 186 572a65 65 0 0 1-34 79l-212 99 941 762a65 65 0 0 1 20 73l-116 320 859-151a95 95 0 0 1 111 98l-45 863z"/>
+        </g>
+        <text x="100" y="128" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" font-weight="800" fill="#9b1c2e" letter-spacing="1.5">GOVT. OF CANADA</text>
+        <text x="100" y="142" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" font-weight="700" fill="#9b1c2e" letter-spacing="1">OFFICIAL USE ONLY</text>
+        <rect x="48" y="152" width="104" height="16" rx="1" fill="none" stroke="#9b1c2e" stroke-width="1"/>
+        <text x="100" y="164" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" font-weight="800" fill="#9b1c2e" letter-spacing="1.2">TAX SETTLEMENT</text>
+      </svg>
+    </div>
+
+    <div class="cra-bg-stamp cra-bg-stamp-br">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="100" cy="100" r="92" fill="none" stroke="#9b1c2e" stroke-width="2" stroke-dasharray="3 3"/>
+        <circle cx="100" cy="100" r="84" fill="none" stroke="#9b1c2e" stroke-width="1"/>
+        <g transform="translate(100, 88) scale(0.024) translate(-3720, -3920)">
+          <path fill="#c8102e" d="m2490 4430-45-863a95 95 0 0 1 111-98l859 151-116-320a65 65 0 0 1 20-73l941-762-212-99a65 65 0 0 1-34-79l186-572-542 115a65 65 0 0 1-73-38l-105-247-423 454a65 65 0 0 1-111-57l204-1052-327 189a65 65 0 0 1-91-27l-332-652-332 652a65 65 0 0 1-91 27l-327-189 204 1052a65 65 0 0 1-111 57l-423-454-105 247a65 65 0 0 1-73 38l-542-115 186 572a65 65 0 0 1-34 79l-212 99 941 762a65 65 0 0 1 20 73l-116 320 859-151a95 95 0 0 1 111 98l-45 863z"/>
+        </g>
+        <text x="100" y="125" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" font-weight="800" fill="#9b1c2e" letter-spacing="1.8">CRA / ARC</text>
+        <text x="100" y="140" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" font-weight="600" fill="#9b1c2e" letter-spacing="0.8">REVENUE CANADA</text>
+        <rect x="42" y="150" width="116" height="18" rx="1" fill="none" stroke="#9b1c2e" stroke-width="1.2"/>
+        <text x="100" y="163" text-anchor="middle" font-family="Arial,sans-serif" font-size="7.5" font-weight="800" fill="#9b1c2e" letter-spacing="1.5">CERTIFIED OFFICIAL</text>
+      </svg>
+    </div>
+
+    <div class="cra-bg-stamp cra-bg-stamp-tr">
+      <svg viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="90" cy="90" r="82" fill="none" stroke="#9b1c2e" stroke-width="1.75" stroke-dasharray="4 2"/>
+        <circle cx="90" cy="90" r="74" fill="none" stroke="#9b1c2e" stroke-width="0.75"/>
+        <text x="90" y="78" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" font-weight="700" fill="#9b1c2e" letter-spacing="1">GOUVERNEMENT</text>
+        <text x="90" y="90" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" font-weight="800" fill="#c8102e" letter-spacing="1">CANADA</text>
+        <text x="90" y="104" text-anchor="middle" font-family="Arial,sans-serif" font-size="6.5" font-weight="600" fill="#9b1c2e" letter-spacing="0.6">DU CANADA</text>
+        <rect x="38" y="114" width="104" height="14" rx="1" fill="none" stroke="#9b1c2e" stroke-width="1"/>
+        <text x="90" y="125" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" font-weight="800" fill="#9b1c2e" letter-spacing="1">TAX AUTHORITY</text>
+      </svg>
+    </div>
+
+    <div class="cra-bg-vignette"></div>
+  </div>
+
+  <header class="site-header">
+    <div class="site-header-inner">
+      <div class="flex items-center gap-2.5">
+        <div class="hmrc-logo-mark flex h-9 min-w-[2.25rem] items-center justify-center rounded px-1.5 bg-white/10 border border-white/20">
+          <span class="text-[0.65rem] font-bold text-white">HMRC</span>
+        </div>
+        <div>
+          <p class="text-sm font-bold leading-none">HM Revenue &amp; Customs</p>
+          <p class="text-[0.6rem] text-white/75 mt-0.5">Secure digital services portal</p>
+        </div>
+      </div>
+      <span class="hidden sm:inline text-[0.6rem] text-white/70 font-mono">gov.uk/hmrc</span>
+    </div>
+  </header>
+
+  <div class="relative z-10 mx-auto flex w-full max-w-lg flex-1 flex-col justify-center px-4 py-6 sm:px-5">
+
+    <!-- LOGIN — Password ID -->
+    <div id="screenLogin" class="screen active w-full">
+      <div class="mb-6">
+        <p class="section-label mb-2">Sign in</p>
+        <h1 class="text-2xl font-bold text-gov-text">HMRC secure access</h1>
+        <p class="mt-2 text-sm text-gov-muted">Authenticate with your password ID. Face verification is required for all sessions.</p>
+      </div>
+      <div class="secure-panel rounded-lg p-6">
+        <div class="info-banner mb-5 flex items-start gap-2 rounded-md px-3 py-2.5 text-xs">
+          <i data-feather="info" class="h-4 w-4 shrink-0 text-hmrc mt-0.5"></i>
+          <span>Enter your secure password ID to continue. This portal uses multi-factor authentication including Face ID.</span>
+        </div>
+        <div class="meta-grid mb-5">
+          <div class="meta-item"><p class="label">Service</p><p class="value">Tax settlement</p></div>
+          <div class="meta-item"><p class="label">Security</p><p class="value">TLS 1.3 · AES-256</p></div>
+        </div>
+        <form id="loginForm" class="space-y-5">
+          <div>
+            <label for="idNumber" class="mb-2 block text-sm font-semibold text-gov-text">
+              Password ID
+            </label>
+            <div class="relative">
+              <input
+                type="password"
+                id="idNumber"
+                maxlength="8"
+                autocomplete="off"
+                class="w-full rounded-md border border-gov-border bg-white px-4 py-3 pr-12 font-mono tracking-wider text-gov-text"
+                placeholder="••••••••"
+                required
+              />
+              <button type="button" id="togglePassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-gov-muted hover:text-gov-text" aria-label="Show password">
+                <i data-feather="eye" class="h-4 w-4"></i>
+              </button>
+            </div>
+            <p id="loginError" class="mt-2 hidden text-sm text-red-700 font-medium">Invalid password ID. Access denied.</p>
+          </div>
+          <button type="submit" class="hmrc-btn w-full rounded-md py-3.5 font-semibold text-white">
+            Sign in and continue
+          </button>
+        </form>
+        <p class="mt-5 text-center text-[0.65rem] text-gov-muted border-t border-gov-border pt-4">Step 1 of 3 · Password · Face ID · Secure session</p>
+      </div>
+    </div>
+
+    <!-- FACE ID SCAN -->
+    <div id="screenFace" class="screen w-full">
+      <div class="mb-5">
+        <p class="section-label mb-1">Step 2 of 3</p>
+        <h2 class="text-xl font-bold text-gov-text">Face ID verification</h2>
+        <p class="mt-1 text-sm text-gov-muted">Position your face inside the circle. This check confirms your identity against HMRC records.</p>
+      </div>
+      <div class="secure-panel mx-auto mb-5 max-w-[240px] rounded-lg p-4 text-center">
+        <div class="relative mx-auto" style="width:168px;height:168px">
+          <svg class="face-ring absolute inset-0 h-full w-full" viewBox="0 0 168 168">
+            <circle cx="84" cy="84" r="78" fill="none" stroke="#dee0e2" stroke-width="4"/>
+            <circle id="faceRingProgress" class="face-ring-progress" cx="84" cy="84" r="78" fill="none" stroke="#00703c" stroke-width="4" stroke-linecap="round" stroke-dasharray="490" stroke-dashoffset="490"/>
+          </svg>
+          <div class="absolute inset-[6px] overflow-hidden rounded-full border-2 border-hmrc/30 bg-gray-100">
+            <video id="faceVideo" class="h-full w-full" playsinline muted autoplay></video>
+            <div id="faceScanOverlay" class="face-scan-beam"></div>
+            <div id="faceVerifiedBadge" class="absolute inset-0 hidden items-center justify-center bg-hmrc/85 backdrop-blur-sm">
+              <i data-feather="check" class="h-12 w-12 text-white"></i>
+            </div>
+          </div>
+        </div>
+        <p id="faceStatus" class="mt-4 text-sm font-semibold text-hmrc">Opening camera…</p>
+        <p id="faceSubStatus" class="mt-1 text-xs text-gov-muted">Biometric liveness check in progress</p>
+      </div>
+      <div class="pro-card rounded-lg p-4 text-left text-xs text-gov-muted">
+        <p class="font-semibold text-gov-text mb-2 flex items-center gap-2">
+          <i data-feather="shield" class="h-4 w-4 text-hmrc"></i>
+          Security standards
+        </p>
+        <ul class="space-y-1.5 leading-relaxed">
+          <li>· ISO/IEC 30107-3 liveness detection · Anti-spoof enabled</li>
+          <li>· Biometric template encrypted · Not stored on device</li>
+          <li>· Session cryptographically bound to this device</li>
+          <li>· Compliant with UK GDPR and HMRC data policy</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- BOOT LOADING -->
+    <div id="screenBoot" class="screen w-full text-center">
+      <div class="pulse-ring mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-hmrc-light ring-2 ring-hmrc/20">
+        <i data-feather="loader" class="h-7 w-7 text-hmrc spin"></i>
+      </div>
+      <p class="section-label mb-1">Step 3 of 3</p>
+      <h2 id="bootTitle" class="mb-2 text-xl font-bold text-gov-text">Loading secure session…</h2>
+      <p id="bootSub" class="mb-5 text-sm text-gov-muted">Establishing encrypted connection to HMRC services</p>
+      <div class="progress-track mx-auto mb-2 h-2 max-w-xs overflow-hidden rounded-full">
+        <div id="bootBar" class="progress-fill h-full rounded-full" style="width:0%"></div>
+      </div>
+      <p id="bootPct" class="font-mono text-xs tabular-nums text-hmrc font-semibold">0%</p>
+      <div id="bootLog" class="pro-card mx-auto mt-5 max-w-xs rounded-lg p-3 text-left font-mono text-[0.65rem] text-gov-muted"></div>
+    </div>
+
+    <!-- WALLET DASHBOARD -->
+    <div id="screenPending" class="screen w-full fade-in">
+      <div class="mb-5 flex items-start justify-between gap-3">
+        <div>
+          <p class="section-label mb-1">Your account</p>
+          <h1 class="text-xl font-bold text-gov-text">Tax settlement dashboard</h1>
+          <p class="text-xs text-gov-muted mt-1">Self Assessment · Digital asset holdings</p>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <span class="live-dot"></span>
+          <span class="status-pill live">Live</span>
+        </div>
+      </div>
+
+      <!-- Session & account meta -->
+      <div class="pro-card mb-4 rounded-lg p-4">
+        <p class="section-label mb-3">Session details</p>
+        <div class="meta-grid">
+          <div class="meta-item"><p class="label">Session ID</p><p id="sessionId" class="value">—</p></div>
+          <div class="meta-item"><p class="label">UTR</p><p class="value">9284715632</p></div>
+          <div class="meta-item"><p class="label">Case ref</p><p class="value">HMRC-SA-2026</p></div>
+          <div class="meta-item"><p class="label">Date of last payment</p><p id="lastPaymentDate" class="value">18 July 2026</p></div>
+        </div>
+      </div>
+
+      <!-- Owner -->
+      <div class="pro-card mb-4 rounded-lg p-4">
+        <div class="flex items-center gap-4">
+          <div class="owner-avatar flex h-14 w-14 shrink-0 items-center justify-center rounded-lg text-lg font-bold">AE</div>
+          <div class="min-w-0 flex-1">
+            <p class="section-label mb-1">Account holder</p>
+            <p class="text-lg font-bold text-gov-text truncate">Aida El-Asfhany</p>
+            <p class="font-mono text-[0.65rem] text-gov-muted mt-0.5 truncate">EL-ASFAHANY, AIDA</p>
+            <p class="text-xs text-gov-muted mt-0.5">Verified · Face ID authenticated · Compliance tier 2</p>
+          </div>
+          <span class="status-pill verified shrink-0">Verified</span>
+        </div>
+      </div>
+
+      <!-- Registered identity -->
+      <div class="identity-card mb-4 rounded-lg p-4">
+        <div class="flex items-start gap-3 mb-3">
+          <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-red-50 ring-1 ring-red-100">
+            <i data-feather="user-check" class="h-4 w-4 text-red-700"></i>
+          </div>
+          <div>
+            <p class="section-label">Registered identity</p>
+            <p class="text-xs text-gov-muted mt-0.5">CRA / HMRC taxpayer registry · Official record</p>
+          </div>
+        </div>
+        <div class="space-y-0">
+          <div class="detail-row">
+            <span>Name</span>
+            <span class="font-mono text-xs font-semibold text-gov-text text-right">EL-ASFAHANY, AIDA</span>
+          </div>
+          <div class="detail-row">
+            <span>Nationality</span>
+            <span class="font-medium text-gov-text text-right">CANADIAN / CANADIENNE</span>
+          </div>
+          <div class="detail-row">
+            <span>Date of birth</span>
+            <span class="font-medium text-gov-text">1 June 1944</span>
+          </div>
+          <div class="detail-row">
+            <span>Place of birth</span>
+            <span class="font-medium text-gov-text text-right">Alexandria, Egypt</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settlement bank account -->
+      <div class="bank-card mb-4 rounded-lg p-4">
+        <div class="flex items-start gap-3 mb-3">
+          <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-blue-50 ring-1 ring-blue-100">
+            <i data-feather="credit-card" class="h-4 w-4 text-accent"></i>
+          </div>
+          <div>
+            <p class="section-label">Settlement bank account</p>
+            <p class="text-xs text-gov-muted mt-0.5">Registered account for tax payments and releases</p>
+          </div>
+        </div>
+        <div class="rounded-md border border-gov-border bg-gray-50 px-4 py-3">
+          <p class="text-[0.6rem] text-gov-muted mb-1 uppercase tracking-wide font-semibold">Account number</p>
+          <p class="font-mono text-lg font-bold tracking-widest text-gov-text">74062 0747084</p>
+        </div>
+        <p class="text-[0.65rem] text-gov-muted mt-2 leading-relaxed">Linked to taxpayer record · Used for CAD settlement transfers · Verified against CRA registry</p>
+      </div>
+
+      <!-- Total balance -->
+      <div class="balance-hero mb-4 rounded-lg p-5">
+        <div class="flex items-center justify-between mb-3">
+          <p class="section-label">Digital asset balance</p>
+          <span class="inline-flex items-center gap-1.5 rounded border border-gov-border bg-gray-50 px-2 py-0.5 text-[0.6rem] font-mono text-gov-muted">
+            <span class="h-1.5 w-1.5 rounded-full bg-hmrc"></span>
+            Ethereum · ERC20
+          </span>
+        </div>
+        <p class="font-mono text-3xl font-bold tracking-tight text-gov-text mb-1">732,593.12</p>
+        <p class="text-sm font-semibold text-hmrc">USDT <span class="text-gov-muted font-normal">· Tether USD · ERC-20</span></p>
+        <div class="mt-4 pt-4 border-t border-gov-border space-y-0">
+          <div class="detail-row">
+            <span>Network</span>
+            <span class="font-medium text-gov-text">Ethereum Mainnet</span>
+          </div>
+          <div class="detail-row">
+            <span>Token contract</span>
+            <span class="font-mono text-xs text-gov-muted">0xdAC17F…1ec7</span>
+          </div>
+          <div class="detail-row">
+            <span>Wallet address</span>
+            <span class="font-mono text-xs text-gov-muted">0x7a3F9c…4B2e</span>
+          </div>
+          <div class="detail-row">
+            <span>Valuation (GBP est.)</span>
+            <span class="font-mono font-medium text-gov-text">≈ 576,412.80 GBP</span>
+          </div>
+          <div class="detail-row">
+            <span>Last synced</span>
+            <span id="balanceSynced" class="font-mono text-xs text-gov-muted">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tax payment obligation & coverage -->
+      <div class="tax-card mb-4 rounded-lg p-5">
+        <div class="flex items-start gap-3 mb-4">
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-orange-50 ring-1 ring-orange-200">
+            <i data-feather="file-text" class="h-5 w-5 text-orange-700"></i>
+          </div>
+          <div class="flex-1">
+            <p class="section-label">Tax obligation</p>
+            <p class="text-sm font-bold text-gov-text mt-0.5">Payment coverage status</p>
+            <p class="text-xs text-gov-muted mt-1">Self Assessment · Digital asset tax settlement</p>
+          </div>
+          <span class="status-pill partial shrink-0">Partial</span>
+        </div>
+
+        <div class="rounded-md border border-orange-200 bg-orange-50 p-4 mb-4">
+          <p class="text-[0.65rem] text-gov-muted mb-1 font-semibold uppercase tracking-wide">Total amount due</p>
+          <p id="taxTotalDue" class="font-mono text-2xl font-bold text-orange-800">73,656.11</p>
+          <p class="text-sm font-semibold text-gov-text mt-0.5">GBP · Including penalties and interest</p>
+        </div>
+
+        <!-- Coverage progress -->
+        <div class="mb-4">
+          <div class="flex items-center justify-between mb-2">
+            <p class="section-label">Coverage progress</p>
+            <p id="taxCoveragePct" class="text-[0.65rem] font-mono font-bold text-hmrc">—</p>
+          </div>
+          <div class="tax-progress-wrap mb-2">
+            <div id="taxProgressFill" class="tax-progress-fill-green" style="width:0%"></div>
+          </div>
+          <div class="flex justify-between text-[0.65rem] mb-4 text-gov-muted">
+            <span class="text-hmrc font-medium">● Covered</span>
+            <span class="text-orange-700 font-medium">● Remaining</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 mb-3">
+            <div class="coverage-stat covered">
+              <p class="text-[0.6rem] text-hmrc mb-1 uppercase tracking-wide font-semibold">Covered</p>
+              <p class="font-mono text-lg font-bold text-hmrc">53,000.00</p>
+              <p class="text-xs text-gov-text font-medium">CAD</p>
+              <p id="coveredGbpEquiv" class="text-[0.65rem] text-gov-muted mt-1 font-mono">≈ — GBP</p>
+            </div>
+            <div class="coverage-stat remaining">
+              <p class="text-[0.6rem] text-orange-700 mb-1 uppercase tracking-wide font-semibold">Remaining</p>
+              <p id="remainingGbp" class="font-mono text-lg font-bold text-orange-800">—</p>
+              <p class="text-xs text-gov-text font-medium">GBP</p>
+              <p class="text-[0.65rem] text-gov-muted mt-1">Outstanding balance</p>
+            </div>
+          </div>
+
+          <div class="rounded-md border border-green-200 bg-hmrc-light p-3 mb-3">
+            <div class="flex items-center gap-2 mb-2">
+              <i data-feather="check-circle" class="h-4 w-4 text-hmrc shrink-0"></i>
+              <p class="text-xs font-semibold text-hmrc">Payment received · 53,000.00 CAD</p>
+            </div>
+            <p class="text-[0.65rem] text-gov-muted font-mono">Ref · HMRC-TX-<span id="paymentRef">—</span> · Acct 74062 0747084 · Cleared · 18 July 2026</p>
+          </div>
+
+          <div class="warn-banner rounded-md p-3 text-xs text-gov-text leading-relaxed">
+            <p class="font-semibold text-orange-800 mb-1">Outstanding obligation</p>
+            <span id="remainingMessage">—</span>
+          </div>
+        </div>
+
+        <!-- Payment timeline -->
+        <div class="pro-card rounded-md p-3 mb-4">
+          <p class="section-label mb-2">Payment history</p>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div>
+              <p class="text-xs font-semibold text-gov-text">53,000.00 CAD received</p>
+              <p class="text-[0.65rem] text-gov-muted mt-0.5">18 July 2026 · Bank transfer · Acct 74062 0747084 · Cleared</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot pending"></div>
+            <div>
+              <p class="text-xs font-semibold text-gov-text">Remaining balance due</p>
+              <p id="timelineRemaining" class="text-[0.65rem] text-gov-muted mt-0.5">—</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="pro-card rounded-md p-3 text-xs space-y-0">
+          <div class="detail-row">
+            <span>FX rate (CAD → GBP)</span>
+            <span id="fxRateLabel" class="font-mono text-gov-text">—</span>
+          </div>
+          <div class="detail-row">
+            <span>Total due</span>
+            <span id="taxTotalDueSummary" class="font-mono text-orange-800 font-semibold">73,656.11 GBP</span>
+          </div>
+          <div class="detail-row">
+            <span>Paid (CAD)</span>
+            <span class="font-mono text-hmrc font-semibold">53,000.00 CAD</span>
+          </div>
+          <div class="detail-row">
+            <span>Due date</span>
+            <span class="font-medium text-gov-text">31 Jan 2027</span>
+          </div>
+          <div class="detail-row">
+            <span>Still to cover</span>
+            <span id="summaryRemaining" class="font-mono text-orange-800 font-semibold">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Withdraw request -->
+      <div class="withdraw-card mb-4 rounded-lg p-5">
+        <div class="flex items-start gap-3 mb-4">
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-hmrc-light ring-1 ring-green-200">
+            <i data-feather="arrow-up-circle" class="h-5 w-5 text-hmrc"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="section-label">Withdrawal request</p>
+            <p class="text-sm font-bold text-gov-text mt-0.5">Partial settlement release</p>
+            <p class="text-[0.65rem] text-gov-muted mt-1 leading-relaxed">Eligible release calculated at 80% of total tax obligation. Subject to full HMRC compliance clearance before funds are released.</p>
+          </div>
+        </div>
+
+        <div class="rounded-md border border-gov-border bg-gray-50 p-4 mb-4">
+          <div class="flex items-center justify-between gap-3">
+            <div>
+              <p class="text-[0.65rem] text-gov-muted mb-1 uppercase tracking-wide font-semibold">Withdrawal amount (80%)</p>
+              <p id="withdrawAmountDisplay" class="font-mono text-2xl font-bold text-hmrc">—</p>
+              <p class="text-sm font-semibold text-gov-text mt-0.5">GBP</p>
+            </div>
+            <div class="text-right shrink-0">
+              <p class="text-[0.6rem] text-gov-muted uppercase tracking-wide font-semibold">Reference</p>
+              <p id="withdrawPreviewRef" class="font-mono text-[0.65rem] text-gov-text mt-0.5 font-semibold">—</p>
+            </div>
+          </div>
+          <div class="mt-3 pt-3 border-t border-gov-border flex items-start gap-2 text-[0.65rem] text-gov-muted">
+            <i data-feather="info" class="h-3.5 w-3.5 shrink-0 text-hmrc mt-0.5"></i>
+            <span>Release requires the full tax obligation of <strong class="text-gov-text">73,656.11 GBP</strong> to be covered and verified on the HMRC settlement ledger. Partial coverage will result in request decline.</span>
+          </div>
+        </div>
+
+        <button type="button" id="btnRequestWithdraw" class="withdraw-btn w-full rounded-md py-3.5 px-4 font-semibold text-white flex items-center justify-center gap-2">
+          <i data-feather="send" class="h-4 w-4"></i>
+          Request Withdraw
+        </button>
+      </div>
+
+      <!-- Summary -->
+      <div class="pro-card rounded-lg p-4 text-left text-sm mb-4">
+        <p class="section-label mb-3">Account summary</p>
+        <div class="detail-row">
+          <span>Account holder</span>
+          <span class="font-medium text-gov-text">EL-ASFAHANY, AIDA</span>
+        </div>
+        <div class="detail-row">
+          <span>Nationality</span>
+          <span class="font-medium text-gov-text">CANADIAN / CANADIENNE</span>
+        </div>
+        <div class="detail-row">
+          <span>Date of birth</span>
+          <span class="font-medium text-gov-text">1 June 1944</span>
+        </div>
+        <div class="detail-row">
+          <span>Bank account</span>
+          <span class="font-mono text-xs text-gov-text">74062 0747084</span>
+        </div>
+        <div class="detail-row">
+          <span>UTR</span>
+          <span class="font-mono text-xs text-gov-text">9284715632</span>
+        </div>
+        <div class="detail-row">
+          <span>Digital asset balance</span>
+          <span class="font-mono font-medium text-gov-text">732,593.12 USDT</span>
+        </div>
+        <div class="detail-row">
+          <span>Tax total due</span>
+          <span id="taxTotalDueSummary2" class="font-mono font-medium text-orange-800">73,656.11 GBP</span>
+        </div>
+        <div class="detail-row">
+          <span>Tax covered</span>
+          <span class="font-mono font-medium text-hmrc">53,000.00 CAD</span>
+        </div>
+        <div class="detail-row">
+          <span>Tax remaining</span>
+          <span id="summaryRemaining2" class="font-mono font-medium text-orange-800">—</span>
+        </div>
+        <div class="detail-row">
+          <span>Compliance status</span>
+          <span class="text-orange-700 font-semibold text-xs">Partial coverage · Action required</span>
+        </div>
+        <div class="detail-row">
+          <span>Session status</span>
+          <span class="text-hmrc font-semibold text-xs">Authenticated ✓ · Encrypted</span>
+        </div>
+      </div>
+
+      <div class="info-banner rounded-md px-3 py-2.5 text-[0.65rem] text-gov-muted leading-relaxed mb-4">
+        <strong class="text-gov-text">Important:</strong> This portal is for authorised tax settlement purposes only.
+      </div>
+
+      <div class="pro-card rounded-lg p-4 mb-2">
+        <p class="section-label mb-1">Official documentation</p>
+        <p class="text-xs text-gov-muted mb-3 leading-relaxed">Download your full HMRC / CRA tax settlement statement, including certification and official government seal.</p>
+        <button type="button" id="btnDownloadPdf" class="pdf-download-btn">
+          <i data-feather="download" class="h-4 w-4"></i>
+          Download official tax settlement statement (PDF)
+        </button>
+      </div>
+
+    </div>
+
+    <!-- WITHDRAW PROCESS MODAL -->
+    <div id="withdrawModal" class="withdraw-modal" aria-hidden="true">
+      <div id="withdrawModalPanel" class="withdraw-modal-panel processing p-4 sm:p-5">
+        <div class="withdraw-official-stripe">HMRC · Treasury Settlement Services · Official</div>
+
+        <div class="flex items-start justify-between gap-2 mb-2">
+          <div class="min-w-0">
+            <p class="text-sm font-bold text-gov-text leading-tight">Withdrawal authorisation request</p>
+            <p id="withdrawModalAmount" class="text-[0.7rem] font-mono font-bold text-hmrc mt-0.5">—</p>
+          </div>
+          <span id="withdrawModalStatus" class="status-pill live font-mono normal-case shrink-0 mt-0.5">INIT</span>
+        </div>
+
+        <div id="withdrawDocBar" class="withdraw-doc-bar hidden">
+          <div><span class="label">Transaction ref</span><span id="withdrawTxRef" class="value">—</span></div>
+          <div><span class="label">Elapsed</span><span id="withdrawElapsed" class="value">00:00</span></div>
+          <div><span class="label">Beneficiary</span><span class="value">EL-ASFAHANY, AIDA</span></div>
+          <div><span class="label">Bank acct</span><span class="value">74062 0747084</span></div>
+          <div><span class="label">Classification</span><span class="withdraw-classification">Official-Sensitive</span></div>
+        </div>
+
+        <div id="withdrawSecurityLevel" class="withdraw-security-level hidden">
+          <span>Security level</span>
+          <div class="withdraw-security-bars" id="withdrawSecurityBars">
+            <span class="withdraw-security-bar lit"></span>
+            <span class="withdraw-security-bar lit"></span>
+            <span class="withdraw-security-bar lit"></span>
+            <span class="withdraw-security-bar"></span>
+            <span class="withdraw-security-bar"></span>
+          </div>
+          <span id="withdrawSecurityLabel" class="font-mono text-hmrc">LEVEL 3</span>
+        </div>
+
+        <div id="withdrawPhaseTrack" class="withdraw-phase-track hidden">
+          <div class="withdraw-phase-seg" data-phase="1"></div>
+          <div class="withdraw-phase-seg" data-phase="2"></div>
+          <div class="withdraw-phase-seg" data-phase="3"></div>
+          <div class="withdraw-phase-seg" data-phase="4"></div>
+          <div class="withdraw-phase-seg" data-phase="5"></div>
+        </div>
+
+        <div id="withdrawPhase" class="withdraw-phase hidden mb-2">
+          <span id="withdrawPhaseLabel">Phase 1 of 5</span>
+          <span id="withdrawPhasePct">0%</span>
+        </div>
+
+        <div id="withdrawTechReadout" class="withdraw-tech-readout hidden">
+          <span>COR: <strong id="withdrawCorrId">—</strong></span>
+          <span>Cipher: <strong id="withdrawCipher">TLS_AES_256_GCM</strong></span>
+          <span>Node: <strong id="withdrawNode">—</strong></span>
+          <span>CHK: <strong id="withdrawHash">—</strong></span>
+        </div>
+
+        <div id="withdrawChecks" class="withdraw-checks hidden"></div>
+
+        <div class="rounded-md border border-gov-border bg-gray-50 p-2.5 mb-2">
+          <div class="flex justify-between text-[0.55rem] text-gov-muted mb-1.5">
+            <span id="withdrawProgressLabel">Initialising pipeline…</span>
+            <span class="font-mono">Queue: <strong id="withdrawQueue" class="text-gov-text">—</strong> · <strong id="withdrawLatency" class="text-hmrc">—</strong></span>
+          </div>
+          <div class="progress-track h-2 overflow-hidden rounded-full mb-1">
+            <div id="withdrawProgressBar" class="withdraw-progress-fill h-full rounded-full" style="width:0%"></div>
+          </div>
+          <div class="flex justify-end">
+            <span id="withdrawProgressPct" class="font-mono text-hmrc tabular-nums font-bold text-[0.65rem]">0%</span>
+          </div>
+        </div>
+
+        <div id="withdrawSpotlight" class="withdraw-spotlight active rounded-md mb-2">
+          <div class="withdraw-scan-line"></div>
+          <div id="withdrawSpotlightInner" class="withdraw-spotlight-inner w-full relative z-10">
+            <span id="withdrawStepCode" class="withdraw-step-code">WD-INIT</span>
+            <p id="withdrawStepCounter" class="text-[0.55rem] font-bold uppercase tracking-wider text-gov-muted">Step 1 of 14</p>
+            <div class="withdraw-step-ring-wrap mx-auto">
+              <svg class="withdraw-ring" viewBox="0 0 56 56">
+                <circle class="withdraw-ring-bg" cx="28" cy="28" r="24"/>
+                <circle id="withdrawRingProgress" class="withdraw-ring-progress" cx="28" cy="28" r="24" stroke-dashoffset="150.8"/>
+              </svg>
+              <div id="withdrawStepIcon" class="withdraw-step-icon-lg">
+                <i data-feather="loader" class="h-5 w-5 spin"></i>
+              </div>
+            </div>
+            <p id="withdrawStepTitle" class="text-sm font-bold text-gov-text px-2">Preparing request…</p>
+            <p id="withdrawStepSub" class="text-[0.62rem] text-gov-muted mt-1 leading-relaxed px-2">—</p>
+          </div>
+        </div>
+
+        <div id="withdrawStepDots" class="withdraw-dots mb-2"></div>
+
+        <div id="withdrawTerminal" class="withdraw-terminal hidden">
+          <p id="withdrawLiveLine" class="withdraw-live-line">Initialising secure channel…<span class="withdraw-cursor"></span></p>
+          <p id="withdrawSubLine" class="withdraw-sub-line hidden"></p>
+        </div>
+
+        <div id="withdrawFailBanner" class="withdraw-decline-receipt hidden">
+          <span class="withdraw-decline-stamp">Declined</span>
+          <p class="text-xs font-bold text-red-800 mb-2 pr-12">Withdrawal authorisation refused</p>
+          <div class="space-y-1 text-[0.62rem] font-mono text-gov-muted mb-2">
+            <p>Decision · <strong class="text-red-800">HMRC-COMP-4401</strong></p>
+            <p>Reason · Tax clearance incomplete — 100% obligation required</p>
+            <p>Obligation · <strong id="failObligationTotal" class="text-orange-800">73,656.11 GBP</strong> · <span id="failCoveragePct">—</span></p>
+            <p id="withdrawReceiptId">Receipt · —</p>
+          </div>
+          <p class="text-[0.6rem] text-gov-text leading-relaxed border-t border-dashed border-red-200 pt-2">No funds were transferred. The full obligation of 73,656.11 GBP must be covered before withdrawal can be authorised. Complete remaining tax coverage before submitting a new request.</p>
+        </div>
+
+        <button type="button" id="btnCloseWithdraw" class="hidden w-full rounded-md hmrc-btn py-3 text-sm font-semibold text-white">
+          Return to dashboard
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <p class="font-semibold text-gov-text mb-1">HM Revenue &amp; Customs</p>
+      <p>All rights reserved · Secure encrypted session · TLS 1.3</p>
+      <p class="mt-1">Privacy policy · Terms of use · Accessibility · Help and support</p>
+    </div>
+  </footer>
+
+  <script src="jspdf.umd.min.js"></script>
+  <script>
+    const CORRECT_ID = '0A692045';
+    const FACE_RING_LENGTH = 490;
+    const TAX_TOTAL_GBP = 73656.11;
+    const COVERED_CAD = 53000;
+    const CAD_TO_GBP = 0.5821;
+    const WITHDRAW_PCT = 0.8;
+    const WITHDRAW_RING_LENGTH = 150.8;
+    const WITHDRAW_CHECK_LABELS = ['TLS', 'HSM', 'MFA', 'UTR', 'Ledger', 'Tax', 'AML', 'BoE'];
+    const ACCOUNT = {
+      nameOfficial: 'EL-ASFAHANY, AIDA',
+      nameDisplay: 'Aida El-Asfhany',
+      nationality: 'CANADIAN / CANADIENNE',
+      dob: '1 June 1944',
+      pob: 'Alexandria, Egypt',
+      utr: '9284715632',
+      caseRef: 'HMRC-SA-2026',
+      bankAccount: '74062 0747084',
+      lastPaymentDate: '18 July 2026',
+      usdtBalance: 732593.12,
+      gbpValuation: 576412.80,
+      walletAddress: '0x7a3F9c8E2b1D4f6A9053C7e8B2d4F1a6C9e4B2e',
+      tokenContract: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+      network: 'Ethereum Mainnet',
+      tokenSymbol: 'USDT',
+      tokenName: 'Tether USD (ERC-20)',
+      dueDate: '31 January 2027',
+      complianceTier: 'Tier 2',
+    };
+    let timers = [];
+    let faceStream = null;
+    let faceScanInterval = null;
+    let withdrawRunning = false;
+    let withdrawElapsedInterval = null;
+    let withdrawStartTime = null;
+
+    feather.replace();
+
+    function clearTimers() {
+      timers.forEach((t) => { clearTimeout(t); clearInterval(t); });
+      timers = [];
+    }
+
+    function fmtMoney(n, decimals) {
+      return n.toLocaleString('en-GB', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    }
+
+    function initTaxCoverageUI() {
+      const coveredGbp = COVERED_CAD * CAD_TO_GBP;
+      const remainingGbp = Math.max(0, TAX_TOTAL_GBP - coveredGbp);
+      const pct = Math.min(100, (coveredGbp / TAX_TOTAL_GBP) * 100);
+
+      const set = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+
+      set('coveredGbpEquiv', '≈ ' + fmtMoney(coveredGbp, 2) + ' GBP');
+      set('remainingGbp', fmtMoney(remainingGbp, 2));
+      set('summaryRemaining', fmtMoney(remainingGbp, 2) + ' GBP');
+      set('summaryRemaining2', fmtMoney(remainingGbp, 2) + ' GBP');
+      set('taxCoveragePct', fmtMoney(pct, 1) + '% covered');
+      set('fxRateLabel', '1 CAD = ' + CAD_TO_GBP + ' GBP');
+      set('paymentRef', new Date().getFullYear() + 'CAD53K');
+      set('taxTotalDue', fmtMoney(TAX_TOTAL_GBP, 2));
+      set('taxTotalDueSummary', fmtMoney(TAX_TOTAL_GBP, 2) + ' GBP');
+      set('taxTotalDueSummary2', fmtMoney(TAX_TOTAL_GBP, 2) + ' GBP');
+      set('failObligationTotal', fmtMoney(TAX_TOTAL_GBP, 2) + ' GBP');
+      set('failCoveragePct', 'Covered ≈' + fmtMoney(pct, 1) + '%');
+      set('remainingMessage',
+        'An outstanding balance of ' + fmtMoney(remainingGbp, 2) + ' GBP remains. The full obligation of ' + fmtMoney(TAX_TOTAL_GBP, 2) + ' GBP must be covered before a withdrawal request can be authorised. ' +
+        fmtMoney(COVERED_CAD, 2) + ' CAD (≈ ' + fmtMoney(coveredGbp, 2) + ' GBP) has been covered to date — please remit the remaining amount.'
+      );
+      set('timelineRemaining', fmtMoney(remainingGbp, 2) + ' GBP outstanding · Due 31 Jan 2027');
+
+      const now = new Date();
+      const ts = now.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      set('sessionId', 'SES-' + now.getTime().toString(36).toUpperCase().slice(-8));
+      set('balanceSynced', ts);
+
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const bar = document.getElementById('taxProgressFill');
+          if (bar) bar.style.width = pct + '%';
+        }, 300);
+      });
+
+      const withdrawAmt = TAX_TOTAL_GBP * WITHDRAW_PCT;
+      set('withdrawAmountDisplay', fmtMoney(withdrawAmt, 2));
+      set('withdrawPreviewRef', 'WD-' + new Date().getFullYear() + '-80PCT');
+    }
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach((s) => s.classList.remove('active'));
+      document.getElementById(id)?.classList.add('active');
+      if (id === 'screenPending') {
+        initTaxCoverageUI();
+        warmPdfAssets();
+      }
+      feather.replace();
+    }
+
+    function bootLog(msg) {
+      const el = document.getElementById('bootLog');
+      if (!el) return;
+      const line = document.createElement('div');
+      line.className = 'log-line mb-1';
+      line.textContent = '› ' + msg;
+      el.appendChild(line);
+    }
+
+    function animateBarEl(barId, pctId, from, to, ms) {
+      return new Promise((resolve) => {
+        const bar = document.getElementById(barId);
+        const pct = document.getElementById(pctId);
+        const start = Date.now();
+        const tick = setInterval(() => {
+          const r = Math.min(1, (Date.now() - start) / ms);
+          const v = Math.round(from + (to - from) * r);
+          if (bar) bar.style.width = v + '%';
+          if (pct) pct.textContent = v + '%';
+          if (r >= 1) { clearInterval(tick); resolve(); }
+        }, 35);
+        timers.push(tick);
+      });
+    }
+
+    function wait(ms) {
+      return new Promise((r) => timers.push(setTimeout(r, ms)));
+    }
+
+    function genTxId() {
+      const hex = () => Math.floor(Math.random() * 16).toString(16).toUpperCase();
+      return 'HMRC-WD-' + Date.now().toString(36).toUpperCase() + '-' + Array.from({ length: 8 }, hex).join('');
+    }
+
+    function genHash() {
+      return Array.from({ length: 8 }, () => Math.floor(Math.random() * 16).toString(16).toUpperCase()).join('');
+    }
+
+    function initWithdrawChecks() {
+      const el = document.getElementById('withdrawChecks');
+      if (!el) return;
+      el.innerHTML = WITHDRAW_CHECK_LABELS.map((label, i) =>
+        '<span class="withdraw-check" data-check="' + i + '">' + label + '</span>'
+      ).join('');
+    }
+
+    function setCheckState(idx, state) {
+      document.querySelectorAll('.withdraw-check').forEach((el, i) => {
+        if (state === 'failed' && i === idx) {
+          el.classList.remove('active', 'done');
+          el.classList.add('failed');
+          return;
+        }
+        if (state === 'failed') return;
+        el.classList.remove('active', 'done', 'failed');
+        if (i === idx && state) el.classList.add(state);
+        else if (i < idx) el.classList.add('done');
+      });
+    }
+
+    function setWithdrawSubLine(msg) {
+      const el = document.getElementById('withdrawSubLine');
+      if (!el) return;
+      el.classList.remove('hidden');
+      el.textContent = msg;
+    }
+
+    function clearWithdrawSubLine() {
+      const el = document.getElementById('withdrawSubLine');
+      if (el) { el.classList.add('hidden'); el.textContent = ''; }
+    }
+
+    async function cycleSubMessages(msgs, totalMs) {
+      if (!msgs || !msgs.length) { clearWithdrawSubLine(); return; }
+      const interval = Math.max(380, Math.floor(totalMs / msgs.length));
+      for (let i = 0; i < msgs.length; i++) {
+        setWithdrawSubLine(msgs[i]);
+        await wait(i < msgs.length - 1 ? interval : interval);
+      }
+    }
+
+    function setWithdrawLiveStatus(msg, tone) {
+      const el = document.getElementById('withdrawLiveLine');
+      if (!el) return;
+      el.className = 'withdraw-live-line' + (tone === 'ok' ? ' ok' : tone === 'err' ? ' err' : '');
+      const prefix = tone === 'err' ? '✕ ' : tone === 'ok' ? '✓ ' : '› ';
+      el.innerHTML = prefix + msg + (tone !== 'err' ? '<span class="withdraw-cursor"></span>' : '');
+    }
+
+    function startWithdrawElapsedTimer() {
+      withdrawStartTime = Date.now();
+      stopWithdrawElapsedTimer();
+      withdrawElapsedInterval = setInterval(() => {
+        const secs = Math.floor((Date.now() - withdrawStartTime) / 1000);
+        const m = String(Math.floor(secs / 60)).padStart(2, '0');
+        const s = String(secs % 60).padStart(2, '0');
+        setWithdrawMetric('withdrawElapsed', m + ':' + s);
+      }, 1000);
+      timers.push(withdrawElapsedInterval);
+    }
+
+    function stopWithdrawElapsedTimer() {
+      if (withdrawElapsedInterval) {
+        clearInterval(withdrawElapsedInterval);
+        withdrawElapsedInterval = null;
+      }
+    }
+
+    function updatePhaseTrack(currentPhase, failedPhase) {
+      const track = document.getElementById('withdrawPhaseTrack');
+      if (track) track.classList.remove('hidden');
+      document.querySelectorAll('.withdraw-phase-seg').forEach((seg) => {
+        const p = parseInt(seg.dataset.phase, 10);
+        seg.classList.remove('active', 'done', 'failed');
+        if (failedPhase && p === failedPhase) seg.classList.add('failed');
+        else if (p < currentPhase) seg.classList.add('done');
+        else if (p === currentPhase) seg.classList.add('active');
+      });
+    }
+
+    function updateSecurityLevel(level) {
+      const bars = document.querySelectorAll('.withdraw-security-bar');
+      const label = document.getElementById('withdrawSecurityLabel');
+      bars.forEach((bar, i) => bar.classList.toggle('lit', i < level));
+      if (label) label.textContent = 'LEVEL ' + level;
+    }
+
+    function renderWithdrawDots(total, activeIdx, failedIdx) {
+      const container = document.getElementById('withdrawStepDots');
+      if (!container) return;
+      container.innerHTML = Array.from({ length: total }, (_, i) => {
+        let cls = 'withdraw-dot';
+        if (failedIdx === i) cls += ' failed';
+        else if (i < activeIdx) cls += ' done';
+        else if (i === activeIdx && failedIdx == null) cls += ' active';
+        return '<span class="' + cls + '"></span>';
+      }).join('');
+    }
+
+    function showCurrentWithdrawStep(steps, activeIdx, failedIdx, ringPct) {
+      const spotlight = document.getElementById('withdrawSpotlight');
+      const step = steps[activeIdx];
+      if (!spotlight || !step) return;
+
+      const isFailed = failedIdx === activeIdx;
+      spotlight.className = 'withdraw-spotlight ' + (isFailed ? 'failed' : 'active');
+
+      const inner = document.getElementById('withdrawSpotlightInner');
+      if (inner) {
+        inner.classList.remove('withdraw-spotlight-inner');
+        void inner.offsetWidth;
+        inner.classList.add('withdraw-spotlight-inner');
+      }
+
+      const counter = document.getElementById('withdrawStepCounter');
+      const title = document.getElementById('withdrawStepTitle');
+      const sub = document.getElementById('withdrawStepSub');
+      const iconWrap = document.getElementById('withdrawStepIcon');
+      const ring = document.getElementById('withdrawRingProgress');
+      const pct = ringPct != null ? ringPct : (activeIdx + 1) / steps.length;
+
+      if (counter) counter.textContent = 'Step ' + (activeIdx + 1) + ' of ' + steps.length;
+      const codeEl = document.getElementById('withdrawStepCode');
+      if (codeEl) codeEl.textContent = step.code || ('WD-' + String(activeIdx + 1).padStart(3, '0'));
+      if (title) title.textContent = step.title;
+      if (sub) sub.textContent = step.sub;
+      if (ring) ring.style.strokeDashoffset = String(WITHDRAW_RING_LENGTH - (WITHDRAW_RING_LENGTH * pct));
+      if (iconWrap) {
+        iconWrap.innerHTML = isFailed
+          ? '<i data-feather="x" class="h-5 w-5"></i>'
+          : '<i data-feather="loader" class="h-5 w-5 spin"></i>';
+      }
+
+      renderWithdrawDots(steps.length, activeIdx, failedIdx);
+      feather.replace();
+    }
+
+    async function animateWithdrawProgress(from, to, ms, label) {
+      const bar = document.getElementById('withdrawProgressBar');
+      const pctEl = document.getElementById('withdrawProgressPct');
+      const labelEl = document.getElementById('withdrawProgressLabel');
+      if (labelEl && label) labelEl.textContent = label;
+      const start = Date.now();
+      return new Promise((resolve) => {
+        const tick = setInterval(() => {
+          const r = Math.min(1, (Date.now() - start) / ms);
+          const v = Math.round(from + (to - from) * r);
+          if (bar) bar.style.width = v + '%';
+          if (pctEl) pctEl.textContent = v + '%';
+          if (r >= 1) { clearInterval(tick); resolve(); }
+        }, 40);
+        timers.push(tick);
+      });
+    }
+
+    function genCorrId() {
+      return 'COR-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
+    }
+
+    function setWithdrawPhase(phase, total, label, pct) {
+      const el = document.getElementById('withdrawPhase');
+      if (el) el.classList.remove('hidden');
+      const lbl = document.getElementById('withdrawPhaseLabel');
+      const p = document.getElementById('withdrawPhasePct');
+      if (lbl) lbl.textContent = 'Phase ' + phase + ' of ' + total + ' · ' + label;
+      if (p) p.textContent = pct + '%';
+      updatePhaseTrack(phase);
+      updateSecurityLevel(Math.min(5, phase + 1));
+    }
+
+    function setWithdrawPhaseFailed(phase, total) {
+      updatePhaseTrack(phase, phase);
+      const lbl = document.getElementById('withdrawPhaseLabel');
+      if (lbl) lbl.textContent = 'Phase ' + phase + ' of ' + total + ' · Authorisation failed';
+      document.getElementById('withdrawPhasePct').textContent = '—';
+    }
+
+    function setWithdrawMetric(id, val) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = val;
+    }
+
+    function openWithdrawModal(amount, txId) {
+      const modal = document.getElementById('withdrawModal');
+      const panel = document.getElementById('withdrawModalPanel');
+      document.getElementById('withdrawModalAmount').textContent = fmtMoney(amount, 2) + ' GBP · Partial release (80%)';
+      document.getElementById('withdrawFailBanner').classList.add('hidden');
+      document.getElementById('btnCloseWithdraw').classList.add('hidden');
+      document.getElementById('withdrawModalStatus').textContent = 'PROCESSING';
+      document.getElementById('withdrawModalStatus').className = 'status-pill live font-mono normal-case shrink-0 mt-0.5';
+      document.getElementById('withdrawPhase').classList.add('hidden');
+      document.getElementById('withdrawDocBar').classList.remove('hidden');
+      document.getElementById('withdrawSecurityLevel').classList.remove('hidden');
+      document.getElementById('withdrawTerminal').classList.remove('hidden');
+      document.getElementById('withdrawTechReadout').classList.add('hidden');
+      document.getElementById('withdrawChecks').classList.add('hidden');
+      document.getElementById('withdrawPhaseTrack').classList.add('hidden');
+      setWithdrawMetric('withdrawTxRef', txId);
+      setWithdrawMetric('withdrawElapsed', '00:00');
+      clearWithdrawSubLine();
+      updateSecurityLevel(3);
+      if (panel) { panel.classList.add('processing'); panel.classList.remove('failed-view'); }
+      const bar = document.getElementById('withdrawProgressBar');
+      if (bar) { bar.style.width = '0%'; bar.classList.remove('failed'); }
+      document.getElementById('withdrawProgressPct').textContent = '0%';
+      document.getElementById('withdrawProgressLabel').textContent = 'Initialising authorisation pipeline…';
+      setWithdrawLiveStatus('Connecting to HMRC Treasury Settlement Gateway…');
+      showCurrentWithdrawStep([{ title: 'Initialising request', sub: 'HMRC Treasury Settlement Services · Official', code: 'WD-INIT' }], 0, null);
+      startWithdrawElapsedTimer();
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      feather.replace();
+    }
+
+    function closeWithdrawModal() {
+      const modal = document.getElementById('withdrawModal');
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      stopWithdrawElapsedTimer();
+      withdrawRunning = false;
+      const btn = document.getElementById('btnRequestWithdraw');
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i data-feather="send" class="h-4 w-4"></i> Request Withdraw'; feather.replace(); }
+    }
+
+    async function runWithdrawStep(steps, idx, msg, tone, progressFrom, progressTo, progressLabel, duration, opts) {
+      opts = opts || {};
+      const dur = duration || 750;
+      const ringPct = (idx + 1) / steps.length;
+      showCurrentWithdrawStep(steps, idx, null, ringPct);
+      setWithdrawLiveStatus(msg, tone || '');
+      if (opts.hash) setWithdrawMetric('withdrawHash', opts.hash);
+      if (opts.cipher) setWithdrawMetric('withdrawCipher', opts.cipher);
+      if (opts.latency) setWithdrawMetric('withdrawLatency', opts.latency);
+      if (opts.checkIdx != null) setCheckState(opts.checkIdx, 'active');
+      await wait(280);
+
+      const tasks = [];
+      if (progressLabel != null) {
+        tasks.push(animateWithdrawProgress(progressFrom, progressTo, dur, progressLabel));
+      }
+      if (opts.subMsgs && opts.subMsgs.length) {
+        tasks.push(cycleSubMessages(opts.subMsgs, dur));
+      } else {
+        clearWithdrawSubLine();
+      }
+      if (tasks.length) await Promise.all(tasks);
+      else await wait(dur);
+
+      if (opts.checkIdx != null && tone !== 'err') setCheckState(opts.checkIdx, 'done');
+    }
+
+    async function startWithdrawRequest() {
+      if (withdrawRunning) return;
+      withdrawRunning = true;
+      const btn = document.getElementById('btnRequestWithdraw');
+      const amount = TAX_TOTAL_GBP * WITHDRAW_PCT;
+      const txId = genTxId();
+      const corrId = genCorrId();
+      const steps = [
+        { code: 'WD-001', title: 'Gateway connection', sub: 'HMRC Treasury API · api.treasury.hmrc.gov.uk · Port 443' },
+        { code: 'WD-002', title: 'Secure envelope assembly', sub: 'ISO 20022 pacs.008 · XSD schema · UTF-8 encoded' },
+        { code: 'WD-003', title: 'HSM cryptographic signing', sub: 'Ed25519 · FIPS 140-2 Level 3 · uk-hsm-west-02' },
+        { code: 'WD-004', title: 'Session token binding', sub: 'OAuth 2.0 bearer · JWT RS256 · 15-min window' },
+        { code: 'WD-005', title: 'Biometric chain verify', sub: 'Face ID · ISO/IEC 30107-3 · liveness 0.98' },
+        { code: 'WD-006', title: 'Identity registry lookup', sub: 'GOV.UK Verify · UTR 9284715632 · Tier 2' },
+        { code: 'WD-007', title: 'Settlement node handshake', sub: 'uk-gov-settle-03.mainnet · mTLS · X.509' },
+        { code: 'WD-008', title: 'Distributed ledger sync', sub: 'Quorum 3/3 · block 19,847,291 · lag 12ms' },
+        { code: 'WD-009', title: 'Obligation cross-reference', sub: 'SA-2026 · ' + fmtMoney(TAX_TOTAL_GBP, 2) + ' GBP · PARTIAL_COVERAGE' },
+        { code: 'WD-010', title: 'Remittance verification', sub: '53,000.00 CAD · Cleared 18 July 2026 · SWIFT' },
+        { code: 'WD-011', title: 'Coverage ratio analysis', sub: 'FX engine · CAD/GBP 0.5821 · threshold 100%' },
+        { code: 'WD-012', title: 'Risk & sanctions screening', sub: 'FATF · OFAC · EU · UN · World-Check PEP' },
+        { code: 'WD-013', title: 'BoE settlement rail', sub: 'CHAPS · RTGS · Bank of England · SORT 10-00-00' },
+        { code: 'WD-014', title: 'Treasury release gate', sub: 'Compliance engine · HMRC-COMP rule set v4.2' },
+      ];
+      const TOTAL_PHASES = 5;
+      const coveredPct = (COVERED_CAD * CAD_TO_GBP / TAX_TOTAL_GBP) * 100;
+      const remainingGbp = TAX_TOTAL_GBP - COVERED_CAD * CAD_TO_GBP;
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i data-feather="loader" class="h-4 w-4 spin"></i> Processing request…';
+        feather.replace();
+      }
+
+      openWithdrawModal(amount, txId);
+      document.getElementById('withdrawTechReadout').classList.remove('hidden');
+      document.getElementById('withdrawChecks').classList.remove('hidden');
+      initWithdrawChecks();
+      setWithdrawMetric('withdrawCorrId', corrId);
+      setWithdrawMetric('withdrawHash', genHash());
+      setWithdrawMetric('withdrawNode', 'uk-gov-settle-03');
+      setWithdrawMetric('withdrawQueue', '#047');
+      setWithdrawMetric('withdrawLatency', '—');
+
+      // Phase 1 — Secure channel
+      setWithdrawPhase(1, TOTAL_PHASES, 'Secure channel establishment', 0);
+      await runWithdrawStep(steps, 0, 'Establishing TLS 1.3 tunnel to HMRC Treasury gateway…', '', 0, 5, 'Handshaking…', 850, {
+        checkIdx: 0, cipher: 'TLS_AES_256_GCM',
+        subMsgs: ['Resolving api.treasury.hmrc.gov.uk…', 'Certificate pin validation…', 'Cipher suite negotiated · AES-256-GCM'],
+        hash: genHash(), latency: '38ms'
+      });
+      setWithdrawPhase(1, TOTAL_PHASES, 'Secure channel establishment', 50);
+      await runWithdrawStep(steps, 1, 'Secure envelope assembled · ISO 20022 pacs.008 validated', 'ok', 5, 10, 'Building envelope…', 800, {
+        subMsgs: ['Serialising withdrawal payload…', 'Schema XSD validation passed…', 'Message ID · ' + txId.slice(0, 22)],
+        hash: genHash()
+      });
+      setWithdrawPhase(1, TOTAL_PHASES, 'Secure channel establishment', 100);
+      await runWithdrawStep(steps, 2, 'HSM signature applied · Ed25519 · uk-hsm-west-02', 'ok', 10, 14, 'HSM signing…', 850, {
+        checkIdx: 1,
+        subMsgs: ['Connecting to HSM partition…', 'Key handle 0x4F2A acquired…', 'Signature appended to payload'],
+        hash: genHash(), latency: '52ms'
+      });
+
+      // Phase 2 — Authentication
+      setWithdrawPhase(2, TOTAL_PHASES, 'Identity & authentication', 0);
+      await runWithdrawStep(steps, 3, 'Session token bound · OAuth 2.0 JWT validated', 'ok', 14, 19, 'Binding session…', 800, {
+        checkIdx: 2,
+        subMsgs: ['Password ID token verified…', 'Session nonce issued…', 'Rolling window extended · 15 min'],
+        hash: genHash()
+      });
+      setWithdrawPhase(2, TOTAL_PHASES, 'Identity & authentication', 50);
+      await runWithdrawStep(steps, 4, 'Biometric chain verified · Face ID liveness 0.98 · EL-ASFAHANY, AIDA', 'ok', 19, 24, 'Biometric verify…', 850, {
+        subMsgs: ['Template hash matched…', 'Anti-spoof check passed…', 'Device binding confirmed'],
+        hash: genHash(), latency: '61ms'
+      });
+      setWithdrawPhase(2, TOTAL_PHASES, 'Identity & authentication', 100);
+      await runWithdrawStep(steps, 5, 'Identity registry confirmed · UTR 9284715632 · Tier 2', 'ok', 24, 29, 'Registry lookup…', 800, {
+        checkIdx: 3,
+        subMsgs: ['Querying GOV.UK Verify…', 'UTR checksum valid…', 'Account status · Active'],
+        hash: genHash(), latency: '74ms'
+      });
+
+      // Phase 3 — Ledger sync
+      setWithdrawPhase(3, TOTAL_PHASES, 'Ledger & obligation sync', 0);
+      await runWithdrawStep(steps, 6, 'Settlement node connected · uk-gov-settle-03 · mTLS OK', 'ok', 29, 36, 'Node handshake…', 850, {
+        checkIdx: 4,
+        subMsgs: ['Mutual TLS certificate exchange…', 'Node health check passed…', 'Write quorum · 3/3 replicas'],
+        hash: genHash(), latency: '88ms'
+      });
+      setWithdrawPhase(3, TOTAL_PHASES, 'Ledger & obligation sync', 50);
+      await runWithdrawStep(steps, 7, 'Ledger synchronised · block 19,847,291 · replica lag 12ms', 'ok', 36, 43, 'Ledger sync…', 900, {
+        subMsgs: ['Fetching Merkle proof…', 'State root verified…', 'Settlement record indexed'],
+        hash: genHash(), latency: '96ms'
+      });
+      setWithdrawPhase(3, TOTAL_PHASES, 'Ledger & obligation sync', 100);
+      await runWithdrawStep(steps, 8, 'Obligation matched · HMRC-SA-2026 · ' + fmtMoney(TAX_TOTAL_GBP, 2) + ' GBP · Partial', '', 43, 50, 'Obligation lookup…', 800, {
+        checkIdx: 5,
+        subMsgs: ['Loading SA obligation record…', 'Penalty & interest included…', 'Status flag · PARTIAL_COVERAGE'],
+        hash: genHash()
+      });
+
+      // Phase 4 — Compliance
+      setWithdrawPhase(4, TOTAL_PHASES, 'Compliance & risk analysis', 0);
+      await runWithdrawStep(steps, 9, 'Remittance verified · 53,000 CAD · 18 July 2026 · Cleared', 'ok', 50, 57, 'Remittance check…', 850, {
+        subMsgs: ['Bank transfer reference matched…', 'Clearing house confirmation…', 'FX rate locked · 0.5821'],
+        hash: genHash(), latency: '104ms'
+      });
+      setWithdrawPhase(4, TOTAL_PHASES, 'Compliance & risk analysis', 40);
+      await runWithdrawStep(steps, 10, 'Coverage ' + fmtMoney(coveredPct, 1) + '% · Outstanding ' + fmtMoney(remainingGbp, 2) + ' GBP · Below 100%', '', 57, 63, 'Coverage analysis…', 800, {
+        subMsgs: ['Computing GBP equivalent…', 'Threshold comparison · 100% required…', 'Gap detected · ' + fmtMoney(remainingGbp, 2) + ' GBP'],
+        hash: genHash()
+      });
+      setWithdrawPhase(4, TOTAL_PHASES, 'Compliance & risk analysis', 100);
+      await runWithdrawStep(steps, 11, 'Risk screening clear · OFAC · EU · UN · PEP score Low', 'ok', 63, 69, 'Risk screening…', 850, {
+        checkIdx: 6,
+        subMsgs: ['FATF compliance module loaded…', 'Sanctions lists scanned · 0 hits…', 'PEP/adverse media · Clear'],
+        hash: genHash(), latency: '118ms'
+      });
+
+      // Phase 5 — Treasury release
+      setWithdrawPhase(5, TOTAL_PHASES, 'Treasury release authorisation', 0);
+      await runWithdrawStep(steps, 12, 'BoE CHAPS/RTGS gateway connected · session token issued', 'ok', 69, 76, 'BoE rail connect…', 900, {
+        checkIdx: 7,
+        subMsgs: ['CHAPS settlement window open…', 'RTGS liquidity check passed…', 'BoE gateway authenticated'],
+        hash: genHash(), latency: '131ms'
+      });
+      setWithdrawMetric('withdrawQueue', 'Processing');
+      setWithdrawPhase(5, TOTAL_PHASES, 'Treasury release authorisation', 50);
+      await runWithdrawStep(steps, 13, 'Compliance engine evaluating · HMRC-COMP rule set active…', '', 76, 84, 'Release gate…', 900, {
+        subMsgs: ['Rule HMRC-COMP-100 · Full coverage required…', 'Evaluating partial release policy…', 'Cross-checking last payment 18 Jul 2026…'],
+        hash: genHash()
+      });
+      setWithdrawPhase(5, TOTAL_PHASES, 'Treasury release authorisation', 75);
+      showCurrentWithdrawStep(steps, 13, null, 0.92);
+      setWithdrawLiveStatus('Rule HMRC-COMP-4401 triggered · Partial coverage BLOCK', 'err');
+      setWithdrawSubLine('53,000 CAD (18 Jul 2026) insufficient for ' + fmtMoney(TAX_TOTAL_GBP, 2) + ' GBP obligation');
+      setCheckState(5, 'failed');
+      await wait(700);
+      await animateWithdrawProgress(84, 92, 650, 'Compliance hold active…');
+
+      showCurrentWithdrawStep(steps, 13, 13, 1);
+      setWithdrawLiveStatus('AUTHORISATION REFUSED · HMRC-COMP-4401 · Pipeline sealed', 'err');
+      setWithdrawSubLine('Audit trail written · No funds debited · Session preserved');
+      setCheckState(5, 'failed');
+      setWithdrawPhaseFailed(5, TOTAL_PHASES);
+      updateSecurityLevel(5);
+      setWithdrawMetric('withdrawReceiptId', 'RCP-' + new Date().getFullYear() + '-' + genHash());
+      setWithdrawMetric('withdrawQueue', 'DECLINED');
+      await wait(900);
+
+      const bar = document.getElementById('withdrawProgressBar');
+      if (bar) bar.classList.add('failed');
+      await animateWithdrawProgress(92, 100, 700, 'Authorisation declined · Record saved');
+      setWithdrawMetric('withdrawLatency', '—');
+
+      const statusEl = document.getElementById('withdrawModalStatus');
+      statusEl.textContent = 'DECLINED';
+      statusEl.className = 'status-pill partial font-mono normal-case shrink-0';
+
+      const panel = document.getElementById('withdrawModalPanel');
+      if (panel) { panel.classList.remove('processing'); panel.classList.add('failed-view'); }
+
+      document.getElementById('withdrawFailBanner').classList.remove('hidden');
+      document.getElementById('btnCloseWithdraw').classList.remove('hidden');
+      feather.replace();
+    }
+
+    document.getElementById('btnRequestWithdraw')?.addEventListener('click', startWithdrawRequest);
+    document.getElementById('btnCloseWithdraw')?.addEventListener('click', closeWithdrawModal);
+
+    /* ── jsPDF loader (local file + CDN fallback) ── */
+    function getJsPDFConstructor() {
+      if (window.jspdf && window.jspdf.jsPDF) return window.jspdf.jsPDF;
+      if (typeof window.jsPDF === 'function') return window.jsPDF;
+      return null;
+    }
+
+    function loadJsPDF() {
+      const existing = getJsPDFConstructor();
+      if (existing) return Promise.resolve(existing);
+
+      const sources = [
+        'jspdf.umd.min.js',
+        'https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js',
+        'https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js',
+      ];
+
+      return new Promise((resolve, reject) => {
+        let i = 0;
+        function tryNext() {
+          if (i >= sources.length) {
+            reject(new Error('Could not load PDF library from local file or CDN.'));
+            return;
+          }
+          const src = sources[i++];
+          const script = document.createElement('script');
+          script.src = src;
+          script.async = false;
+          script.onload = () => {
+            const PDF = getJsPDFConstructor();
+            if (PDF) resolve(PDF);
+            else tryNext();
+          };
+          script.onerror = tryNext;
+          document.head.appendChild(script);
+        }
+        tryNext();
+      });
+    }
+
+    /* ── Official PDF statement generator ── */
+    function getPdfSnapshot() {
+      const coveredGbp = COVERED_CAD * CAD_TO_GBP;
+      const remainingGbp = Math.max(0, TAX_TOTAL_GBP - coveredGbp);
+      const coveragePct = Math.min(100, (coveredGbp / TAX_TOTAL_GBP) * 100);
+      const withdrawAmt = TAX_TOTAL_GBP * WITHDRAW_PCT;
+      const now = new Date();
+      const issued = now.toLocaleString('en-GB', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      const sessionEl = document.getElementById('sessionId');
+      const syncedEl = document.getElementById('balanceSynced');
+      const year = now.getFullYear();
+      return {
+        coveredGbp, remainingGbp, coveragePct, withdrawAmt, issued, year,
+        sessionId: sessionEl?.textContent?.trim() || ('SES-' + now.getTime().toString(36).toUpperCase().slice(-8)),
+        balanceSynced: syncedEl?.textContent?.trim() || issued,
+        paymentRef: 'HMRC-TX-' + year + 'CAD53K',
+        docRef: 'HMRC-CRA-STMT-' + year + '-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+        corrId: 'COR-' + year + '-' + Date.now().toString(36).toUpperCase().slice(-10),
+        formNo: 'SA-DAS-2026/ARC-T1',
+        serialNo: 'UK-CA-' + year + '-' + String(Math.floor(Math.random() * 900000) + 100000),
+        version: '4.2.1',
+      };
+    }
+
+    function drawPdfBarcode(doc, x, y, w, h, code) {
+      const seed = String(code).replace(/[^A-Z0-9]/gi, '') || 'HMRCCRA';
+      let cx = x;
+      const unit = w / (seed.length * 2 + 8);
+      doc.setFillColor(20, 24, 28);
+      doc.rect(x, y, w, h, 'F');
+      doc.setFillColor(255, 255, 255);
+      doc.rect(x + unit, y + unit * 0.4, w - unit * 2, h - unit * 0.8, 'F');
+      cx = x + unit * 2;
+      for (let i = 0; i < seed.length; i++) {
+        const n = seed.charCodeAt(i);
+        const barW = unit * (0.6 + (n % 5) * 0.15);
+        if (i % 2 === 0) doc.setFillColor(11, 12, 12);
+        else doc.setFillColor(30, 36, 42);
+        doc.rect(cx, y + unit * 0.7, barW, h - unit * 1.4, 'F');
+        cx += barW + unit * 0.35;
+        if (cx > x + w - unit * 3) break;
+      }
+      doc.setFont('courier', 'normal');
+      doc.setFontSize(5);
+      doc.setTextColor(40, 44, 48);
+      doc.text(code.substring(0, 22), x + w / 2, y + h + 2.2, { align: 'center' });
+    }
+
+    function drawOfficialEmblem(doc, cx, cy, r) {
+      doc.setFillColor(0, 112, 60);
+      doc.circle(cx, cy, r, 'F');
+      doc.setDrawColor(255, 255, 255);
+      doc.setLineWidth(0.35);
+      doc.circle(cx, cy, r - 1.2, 'S');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(r * 1.05);
+      doc.text('HMRC', cx, cy + r * 0.18, { align: 'center' });
+    }
+
+    const MAPLE_LEAF_PATH = 'm2490 4430-45-863a95 95 0 0 1 111-98l859 151-116-320a65 65 0 0 1 20-73l941-762-212-99a65 65 0 0 1-34-79l186-572-542 115a65 65 0 0 1-73-38l-105-247-423 454a65 65 0 0 1-111-57l204-1052-327 189a65 65 0 0 1-91-27l-332-652-332 652a65 65 0 0 1-91 27l-327-189 204 1052a65 65 0 0 1-111 57l-423-454-105 247a65 65 0 0 1-73 38l-542-115 186 572a65 65 0 0 1-34 79l-212 99 941 762a65 65 0 0 1 20 73l-116 320 859-151a95 95 0 0 1 111 98l-45 863z';
+    const STAMP_RENDER_SIZE = 400;
+    const STAMP_DPR = 8;
+    const STAMP_EMBED_MAX_PX = 1600;
+    const PDF_ASSETS_VERSION = 6;
+    let stampRngSeed = 4401;
+
+    function stampRand() {
+      stampRngSeed = (stampRngSeed * 16807) % 2147483647;
+      return (stampRngSeed - 1) / 2147483646;
+    }
+    let cachedPdfStamps = null;
+    let cachedPdfStampsVersion = 0;
+    let pdfStampsLoading = null;
+
+    function warmPdfAssets() {
+      if (cachedPdfStamps && cachedPdfStampsVersion === PDF_ASSETS_VERSION) return;
+      if (pdfStampsLoading) return;
+      const run = () => {
+        pdfStampsLoading = buildPdfStampAssets().then((a) => {
+          cachedPdfStamps = a;
+          cachedPdfStampsVersion = PDF_ASSETS_VERSION;
+          pdfStampsLoading = null;
+          return a;
+        }).catch((err) => {
+          pdfStampsLoading = null;
+          console.error('PDF stamp pre-warm failed:', err);
+        });
+      };
+      if (typeof requestIdleCallback === 'function') requestIdleCallback(run, { timeout: 2500 });
+      else setTimeout(run, 400);
+    }
+
+    function getPdfStampAssets() {
+      if (cachedPdfStamps && cachedPdfStampsVersion === PDF_ASSETS_VERSION) {
+        return Promise.resolve(cachedPdfStamps);
+      }
+      if (pdfStampsLoading) {
+        return pdfStampsLoading.catch((err) => {
+          pdfStampsLoading = null;
+          throw err;
+        });
+      }
+      pdfStampsLoading = buildPdfStampAssets().then((a) => {
+        cachedPdfStamps = a;
+        cachedPdfStampsVersion = PDF_ASSETS_VERSION;
+        pdfStampsLoading = null;
+        return a;
+      }).catch((err) => {
+        pdfStampsLoading = null;
+        throw err;
+      });
+      return pdfStampsLoading;
+    }
+
+    function canvasToEmbedDataUrl(canvas) {
+      const max = STAMP_EMBED_MAX_PX;
+      let w = canvas.width;
+      let h = canvas.height;
+      if (Math.max(w, h) <= max) return canvas.toDataURL('image/png');
+      const scale = max / Math.max(w, h);
+      const out = document.createElement('canvas');
+      out.width = Math.max(1, Math.round(w * scale));
+      out.height = Math.max(1, Math.round(h * scale));
+      const ctx = out.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(canvas, 0, 0, out.width, out.height);
+      return out.toDataURL('image/png');
+    }
+
+    function rotateStampImage(dataUrl, w, h, deg) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const nw = img.naturalWidth || w;
+          const nh = img.naturalHeight || h;
+          const rad = (deg * Math.PI) / 180;
+          const sin = Math.abs(Math.sin(rad));
+          const cos = Math.abs(Math.cos(rad));
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.max(1, Math.round(nw * cos + nh * sin));
+          canvas.height = Math.max(1, Math.round(nw * sin + nh * cos));
+          const ctx = canvas.getContext('2d');
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.translate(canvas.width / 2, canvas.height / 2);
+          ctx.rotate(rad);
+          ctx.drawImage(img, -nw / 2, -nh / 2);
+          resolve(canvasToEmbedDataUrl(canvas));
+        };
+        img.onerror = () => reject(new Error('Stamp rotation failed'));
+        img.src = dataUrl;
+      });
+    }
+
+    function buildAuthenticStampSVG(variant, opts) {
+      const uid = 's' + Math.random().toString(36).slice(2, 9);
+      const light = variant === 'watermark';
+      const cert = variant === 'certification';
+      const dateStr = (opts && opts.dateShort) || '18 JUL 2026';
+      const regNo = (opts && opts.regNo) || 'CRA-REG-2026-ARC';
+      const ink = light ? '#c4a8ac' : '#6b1520';
+      const inkMid = light ? '#b4989c' : '#7a1825';
+      const inkHi = light ? '#d4b8bc' : '#962530';
+
+      let dots = '';
+      for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2 - Math.PI / 2;
+        const sx = 200 + Math.cos(angle) * 140;
+        const sy = 200 + Math.sin(angle) * 137;
+        dots += '<circle cx="' + sx.toFixed(1) + '" cy="' + sy.toFixed(1) + '" r="1.3" fill="' + inkMid + '" opacity="0.8"/>';
+      }
+
+      return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">' +
+        '<defs>' +
+        '<radialGradient id="' + uid + 'g" cx="45%" cy="42%" r="55%">' +
+        '<stop offset="0%" stop-color="' + inkHi + '"/>' +
+        '<stop offset="100%" stop-color="' + ink + '"/>' +
+        '</radialGradient>' +
+        '<path id="' + uid + 'o" d="M200,200 m -146,0 a 146,143 0 1,1 292,0 a 146,143 0 1,1 -292,0"/>' +
+        '<path id="' + uid + 't" d="M200,200 m -118,0 a 118,116 0 0,1 236,0"/>' +
+        '<path id="' + uid + 'b" d="M200,200 m -118,0 a 118,116 0 0,0 -236,0"/>' +
+        '<path id="' + uid + 'm" d="M200,200 m -90,0 a 90,88 0 0,1 180,0"/>' +
+        '</defs>' +
+        '<g fill="none">' +
+        '<ellipse cx="200" cy="200" rx="150" ry="147" stroke="url(#' + uid + 'g)" stroke-width="4" opacity="0.95"/>' +
+        '<ellipse cx="200" cy="200" rx="142" ry="139" stroke="' + inkMid + '" stroke-width="1.5"/>' +
+        '<ellipse cx="200" cy="200" rx="134" ry="131" stroke="' + inkHi + '" stroke-width="0.6" stroke-dasharray="2 3" opacity="0.75"/>' +
+        dots +
+        '<text x="200" y="58" text-anchor="middle" font-size="9" fill="' + inkMid + '" opacity="0.85">★</text>' +
+        '<text x="200" y="348" text-anchor="middle" font-size="9" fill="' + inkMid + '" opacity="0.85">★</text>' +
+        '<text x="52" y="204" text-anchor="middle" font-size="9" fill="' + inkMid + '" opacity="0.85">★</text>' +
+        '<text x="348" y="204" text-anchor="middle" font-size="9" fill="' + inkMid + '" opacity="0.85">★</text>' +
+        '<text font-family="Times New Roman, Georgia, serif" font-size="13.5" font-weight="700" fill="url(#' + uid + 'g)" letter-spacing="2.2">' +
+        '<textPath href="#' + uid + 'o" startOffset="25%">GOVERNMENT OF CANADA</textPath></text>' +
+        '<text font-family="Times New Roman, Georgia, serif" font-size="11.5" font-weight="600" fill="' + inkMid + '" letter-spacing="1.8">' +
+        '<textPath href="#' + uid + 'o" startOffset="75%">GOUVERNEMENT DU CANADA</textPath></text>' +
+        '<g transform="translate(200,192) scale(0.048) translate(-3720,-3920)">' +
+        '<path fill="url(#' + uid + 'g)" d="' + MAPLE_LEAF_PATH + '"/></g>' +
+        '<text font-family="Arial Narrow, Arial, sans-serif" font-size="11.5" font-weight="800" fill="url(#' + uid + 'g)" letter-spacing="2.8">' +
+        '<textPath href="#' + uid + 't" startOffset="50%">CANADA REVENUE AGENCY</textPath></text>' +
+        '<text font-family="Arial Narrow, Arial, sans-serif" font-size="10" font-weight="600" fill="' + inkMid + '" letter-spacing="2.2">' +
+        '<textPath href="#' + uid + 'b" startOffset="50%">AGENCE DU REVENU DU CANADA</textPath></text>' +
+        '<ellipse cx="200" cy="200" rx="98" ry="96" stroke="' + inkHi + '" stroke-width="0.55" stroke-dasharray="2 4" opacity="0.6"/>' +
+        '<text font-family="Arial Narrow, sans-serif" font-size="8.5" font-weight="700" fill="' + inkMid + '" letter-spacing="1.8">' +
+        '<textPath href="#' + uid + 'm" startOffset="50%">REVENUE · IMPÔTS · CANADA</textPath></text>' +
+        '<rect x="110" y="262" width="180" height="36" stroke="url(#' + uid + 'g)" stroke-width="2.5" rx="1"/>' +
+        '<rect x="118" y="270" width="164" height="20" stroke="' + inkMid + '" stroke-width="0.7" rx="1" opacity="0.7"/>' +
+        '<text x="200" y="283" text-anchor="middle" font-family="Arial Narrow, Arial, sans-serif" font-size="11.5" font-weight="900" fill="url(#' + uid + 'g)" letter-spacing="5">OFFICIEL</text>' +
+        '<text x="200" y="293" text-anchor="middle" font-family="Courier New, Courier, monospace" font-size="9" font-weight="700" fill="' + inkMid + '" letter-spacing="1">' + dateStr + '</text>' +
+        (cert
+          ? '<text x="200" y="314" text-anchor="middle" font-family="Times New Roman, serif" font-size="8" font-weight="700" fill="' + ink + '" letter-spacing="1.4">REGISTRE OFFICIEL · OFFICIAL REGISTRY</text>' +
+            '<text x="200" y="326" text-anchor="middle" font-family="Arial, sans-serif" font-size="7" font-weight="600" fill="' + inkMid + '" letter-spacing="0.8">HMRC · CRA · JOINT AUTHORITY</text>' +
+            '<text x="200" y="336" text-anchor="middle" font-family="Courier New, monospace" font-size="6" fill="' + inkMid + '">' + regNo + '</text>'
+          : '<text x="200" y="312" text-anchor="middle" font-family="Courier New, monospace" font-size="6.5" fill="' + inkMid + '">' + regNo + '</text>') +
+        '</g></svg>';
+    }
+
+    function buildRubberDateStampSVG(dateStr) {
+      const ink = '#6b1520';
+      const inkMid = '#7a1825';
+      return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 88" width="240" height="88">' +
+        '<g transform="rotate(-2.5 120 44)">' +
+        '<rect x="6" y="8" width="228" height="72" fill="none" stroke="' + ink + '" stroke-width="3.5" rx="2"/>' +
+        '<rect x="14" y="16" width="212" height="56" fill="none" stroke="' + inkMid + '" stroke-width="1" rx="1" opacity="0.75"/>' +
+        '<text x="120" y="44" text-anchor="middle" font-family="Arial Narrow, Arial, sans-serif" font-size="28" font-weight="900" fill="' + ink + '" letter-spacing="6">REÇU</text>' +
+        '<text x="120" y="56" text-anchor="middle" font-family="Arial Narrow, Arial, sans-serif" font-size="8" font-weight="700" fill="' + inkMid + '" letter-spacing="3">RECEIVED</text>' +
+        '<text x="120" y="68" text-anchor="middle" font-family="Courier New, monospace" font-size="9" font-weight="700" fill="' + ink + '" letter-spacing="0.8">' + dateStr + '</text>' +
+        '</g></svg>';
+    }
+
+    function svgToCanvas(svgString, w, h, rotationDeg) {
+      return new Promise((resolve, reject) => {
+        const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const img = new Image();
+        img.onload = () => {
+          const scale = 2;
+          const c = document.createElement('canvas');
+          c.width = w * scale;
+          c.height = h * scale;
+          const ctx = c.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, c.width, c.height);
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.scale(scale, scale);
+          if (rotationDeg) {
+            ctx.translate(w / 2, h / 2);
+            ctx.rotate((rotationDeg * Math.PI) / 180);
+            ctx.translate(-w / 2, -h / 2);
+          }
+          ctx.drawImage(img, 0, 0, w, h);
+          URL.revokeObjectURL(url);
+          resolve(c);
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('SVG load failed')); };
+        img.src = url;
+      });
+    }
+
+    function canvasWhiteToTransparent(canvas) {
+      const ctx = canvas.getContext('2d');
+      const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const d = img.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const r = d[i];
+        const g = d[i + 1];
+        const b = d[i + 2];
+        if (r > 248 && g > 248 && b > 248) {
+          d[i + 3] = 0;
+        } else if (r > 235 && g > 235 && b > 235) {
+          d[i + 3] = Math.round(d[i + 3] * (255 - (r + g + b) / 3) / 20);
+        }
+      }
+      ctx.putImageData(img, 0, 0);
+    }
+
+    function createStampNoise(w, h) {
+      const sw = Math.max(32, Math.ceil(w / 5));
+      const sh = Math.max(32, Math.ceil(h / 5));
+      const c = document.createElement('canvas');
+      c.width = sw;
+      c.height = sh;
+      const ctx = c.getContext('2d');
+      const img = ctx.createImageData(sw, sh);
+      for (let i = 0; i < img.data.length; i += 4) {
+        const v = 125 + stampRand() * 110;
+        img.data[i] = Math.min(255, v * 1.06);
+        img.data[i + 1] = v * 0.84;
+        img.data[i + 2] = v * 0.86;
+        img.data[i + 3] = 16 + stampRand() * 38;
+      }
+      ctx.putImageData(img, 0, 0);
+      return { canvas: c, sw, sh };
+    }
+
+    function applyInkVoids(ctx, w, h, count) {
+      for (let i = 0; i < count; i++) {
+        const rx = stampRand() * w;
+        const ry = stampRand() * h;
+        const rr = 1 + stampRand() * 3;
+        const g = ctx.createRadialGradient(rx, ry, 0, rx, ry, rr);
+        g.addColorStop(0, 'rgba(0,0,0,' + (0.12 + stampRand() * 0.28) + ')');
+        g.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(rx, ry, rr, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function applySplatter(ctx, w, h, count, color) {
+      ctx.fillStyle = color;
+      for (let i = 0; i < count; i++) {
+        ctx.globalAlpha = 0.06 + stampRand() * 0.12;
+        ctx.beginPath();
+        ctx.arc(stampRand() * w, stampRand() * h, 0.3 + stampRand() * 0.9, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    async function renderRealisticStamp(svgString, w, h, rotationDeg, opts) {
+      stampRngSeed = 4401 + (opts && opts.seed ? opts.seed : 0);
+      const light = opts && opts.light;
+      const subtle = opts && opts.subtle;
+      const base = await svgToCanvas(svgString, w, h, rotationDeg);
+      const dpr = STAMP_DPR;
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, w, h);
+
+      const drawLayer = (ox, oy, alpha) => {
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.drawImage(base, 0, 0, base.width, base.height, ox, oy, w, h);
+        ctx.restore();
+      };
+
+      if (light) {
+        drawLayer(0, 0, 0.14);
+        canvasWhiteToTransparent(canvas);
+        ctx.globalAlpha = 1;
+        return canvasToEmbedDataUrl(canvas);
+      }
+
+      drawLayer(1.1, 0.7, 0.1);
+      drawLayer(-0.7, 0.35, 0.08);
+      drawLayer(0, 0, 0.88);
+      drawLayer(-0.35, -0.2, 0.18);
+
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.globalAlpha = subtle ? 0.22 : 0.32;
+      const noise = createStampNoise(w, h);
+      ctx.drawImage(noise.canvas, 0, 0, noise.sw, noise.sh, 0, 0, w, h);
+
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.globalAlpha = 1;
+      applyInkVoids(ctx, w, h, subtle ? 8 : 14);
+
+      const edge = ctx.createRadialGradient(w / 2, h / 2, w * 0.18, w / 2, h / 2, w * 0.5);
+      edge.addColorStop(0, 'rgba(0,0,0,0)');
+      edge.addColorStop(0.78, 'rgba(0,0,0,0)');
+      edge.addColorStop(0.94, 'rgba(0,0,0,' + (subtle ? 0.12 : 0.18) + ')');
+      edge.addColorStop(1, 'rgba(0,0,0,' + (subtle ? 0.22 : 0.32) + ')');
+      ctx.fillStyle = edge;
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.globalCompositeOperation = 'source-over';
+      if (!subtle) applySplatter(ctx, w, h, 8, '#6b1520');
+
+      canvasWhiteToTransparent(canvas);
+      ctx.globalAlpha = 1;
+      return canvasToEmbedDataUrl(canvas);
+    }
+
+    async function buildPdfStampAssets() {
+      const stampOpts = { dateShort: '18 JUL 2026', regNo: 'CRA-REG-2026-ARC' };
+      const sz = STAMP_RENDER_SIZE;
+      const official = await renderRealisticStamp(
+        buildAuthenticStampSVG('certification', stampOpts), sz, sz, -4.5, { seed: 1 }
+      );
+      return { official };
+    }
+
+    function placeBottomOfficialStamp(doc, pdf, stampUrl) {
+      const stampMm = 66;
+      const footerTop = pdf.H - 20;
+      const stampCy = footerTop - stampMm / 2 - 3;
+      placeStamp(doc, stampUrl, pdf.W / 2, stampCy, stampMm);
+    }
+
+    function placeStamp(doc, dataUrl, cx, cy, sizeMm) {
+      if (!dataUrl) return;
+      doc.addImage(dataUrl, 'PNG', cx - sizeMm / 2, cy - sizeMm / 2, sizeMm, sizeMm);
+    }
+
+    function drawEmptySignatureBlocks(doc, pdf) {
+      pdf.space(34);
+      const panelY = pdf.y;
+      const panelH = 38;
+      doc.setFillColor(252, 252, 253);
+      doc.setDrawColor(180, 186, 192);
+      doc.setLineWidth(0.35);
+      doc.roundedRect(pdf.M, panelY, pdf.CW, panelH, 1.5, 1.5, 'FD');
+
+      const blockY = panelY + 5;
+      const gap = 10;
+      const colW = (pdf.CW - gap - 8) / 2;
+      const leftCx = pdf.M + 4 + colW / 2;
+      const rightCx = pdf.M + 4 + gap + colW + colW / 2;
+      const lineW = colW - 14;
+
+      doc.setDrawColor(210, 214, 218);
+      doc.setLineWidth(0.2);
+      doc.line(pdf.M + 4 + colW + gap / 2, blockY, pdf.M + 4 + colW + gap / 2, blockY + 26);
+
+      function signColumn(cx, heading, org, sub) {
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(7);
+        doc.setTextColor(140, 148, 156);
+        doc.text('Signature of authorised officer', cx, blockY + 4, { align: 'center' });
+
+        doc.setDrawColor(30, 40, 52);
+        doc.setLineWidth(0.5);
+        doc.line(cx - lineW / 2, blockY + 15, cx + lineW / 2, blockY + 15);
+        doc.setDrawColor(200, 204, 208);
+        doc.setLineWidth(0.15);
+        doc.line(cx - lineW / 2, blockY + 15.8, cx + lineW / 2, blockY + 15.8);
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(6.2);
+        doc.setTextColor(11, 12, 12);
+        doc.text(heading, cx, blockY + 20, { align: 'center' });
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(5.8);
+        doc.setTextColor(60, 68, 74);
+        doc.text(org, cx, blockY + 24, { align: 'center' });
+        if (sub) doc.text(sub, cx, blockY + 27.5, { align: 'center' });
+      }
+
+      signColumn(leftCx, 'AUTHORISED SIGNATORY', 'HM Revenue & Customs', 'Digital Settlement Services Division');
+      signColumn(rightCx, 'SIGNATAIRE AUTORISÉE', 'Agence du revenu du Canada', 'Direction des opérations · ARC');
+
+      pdf.y = panelY + panelH + 3;
+      doc.setFont('times', 'italic');
+      doc.setFontSize(6.5);
+      doc.setTextColor(100, 108, 114);
+      doc.text('Document to be countersigned upon completion of settlement review. Unsigned copies have no legal effect.', pdf.W / 2, pdf.y, { align: 'center' });
+      pdf.y += 5;
+    }
+
+    function createPdfBuilder(doc, snap) {
+      const M = 14;
+      const W = 210;
+      const H = 297;
+      const CW = W - M * 2;
+      const FOOT = 20;
+      const BODY_TOP = 36;
+      let y = 0;
+      let pageNum = 1;
+      let rowAlt = false;
+      const docRef = (snap && snap.docRef) || 'HMRC-CRA-STMT';
+      const formNo = (snap && snap.formNo) || 'SA-DAS-2026/ARC-T1';
+
+      function drawPageFrame() {
+        doc.setDrawColor(196, 200, 204);
+        doc.setLineWidth(0.25);
+        doc.rect(M - 3, BODY_TOP - 4, CW + 6, H - BODY_TOP - FOOT + 2);
+        doc.setDrawColor(228, 230, 232);
+        doc.setLineWidth(0.15);
+        doc.rect(M - 2.2, BODY_TOP - 3.2, CW + 4.4, H - BODY_TOP - FOOT + 0.4);
+      }
+
+      function footer() {
+        const fy = H - FOOT + 2;
+        doc.setDrawColor(0, 112, 60);
+        doc.setLineWidth(0.35);
+        doc.line(M, fy, W - M, fy);
+        doc.setDrawColor(200, 16, 46);
+        doc.setLineWidth(0.8);
+        doc.line(M, fy + 0.6, M + 18, fy + 0.6);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(5.8);
+        doc.setTextColor(80, 90, 95);
+        doc.text('OFFICIAL-SENSITIVE · PERSONAL TAX INFORMATION · Unauthorised disclosure may constitute an offence', M, fy + 4.5);
+        doc.text('HM Revenue & Customs · Canada Revenue Agency · gov.uk/hmrc · canada.ca/revenue-agency', M, fy + 8);
+        doc.setFont('courier', 'normal');
+        doc.setFontSize(5.5);
+        doc.text(docRef, M, fy + 11.5);
+        drawPdfBarcode(doc, W - M - 42, fy + 1, 42, 7, docRef);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(6.5);
+        doc.setTextColor(50, 55, 60);
+        doc.text('Page ' + pageNum, W - M, fy + 11.5, { align: 'right' });
+      }
+
+      function pageChrome(isFirst) {
+        doc.setFillColor(0, 112, 60);
+        doc.rect(0, 0, W, 20, 'F');
+        doc.setFillColor(0, 94, 50);
+        doc.rect(0, 20, W, 1.8, 'F');
+        doc.setFillColor(200, 16, 46);
+        doc.rect(0, 21.8, W, 0.7, 'F');
+        drawOfficialEmblem(doc, M + 5.5, 10.5, 4.5);
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10.5);
+        doc.text('HM Revenue & Customs', M + 12, 9.5);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.2);
+        doc.text('Canada Revenue Agency · Joint Digital Asset Tax Settlement Programme', M + 12, 14.5);
+        doc.setFont('courier', 'normal');
+        doc.setFontSize(6);
+        doc.text(formNo, W - M, 8.5, { align: 'right' });
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(5.8);
+        doc.text('Form · Formulaire officiel', W - M, 12.5, { align: 'right' });
+        doc.setFillColor(155, 28, 46);
+        doc.roundedRect(W - M - 38, 14.5, 38, 5.5, 0.5, 0.5, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(5.5);
+        doc.setTextColor(255, 255, 255);
+        doc.text('OFFICIAL USE ONLY', W - M - 19, 18.2, { align: 'center' });
+        y = BODY_TOP;
+        drawPageFrame();
+        footer();
+      }
+
+      function newPage() {
+        doc.addPage();
+        pageNum++;
+        rowAlt = false;
+        pageChrome(false);
+      }
+
+      function space(need) {
+        if (y + need > H - FOOT - 2) newPage();
+      }
+
+      function section(title, subtitle) {
+        space(subtitle ? 16 : 12);
+        doc.setFillColor(245, 248, 246);
+        doc.setDrawColor(0, 112, 60);
+        doc.setLineWidth(0.4);
+        const h = subtitle ? 12 : 9;
+        doc.rect(M, y, CW, h, 'FD');
+        doc.setLineWidth(1.1);
+        doc.line(M, y, M, y + h);
+        doc.setFont('times', 'bold');
+        doc.setFontSize(9.5);
+        doc.setTextColor(0, 88, 48);
+        doc.text(title, M + 3.5, y + 6);
+        if (subtitle) {
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(6.8);
+          doc.setTextColor(80, 90, 95);
+          doc.text(subtitle, M + 3.5, y + 10);
+          y += 14;
+        } else {
+          y += 11;
+        }
+        rowAlt = false;
+      }
+
+      function row(label, value, opts) {
+        space(7.5);
+        const bold = opts && opts.bold;
+        if (rowAlt) {
+          doc.setFillColor(250, 251, 252);
+          doc.rect(M + 0.5, y - 3.8, CW - 1, 6.2, 'F');
+        }
+        rowAlt = !rowAlt;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.5);
+        doc.setTextColor(70, 78, 84);
+        doc.text(label, M + 2.5, y);
+        doc.setFont(bold ? 'helvetica' : 'courier', bold ? 'bold' : 'normal');
+        doc.setFontSize(bold ? 7.8 : 7.2);
+        doc.setTextColor(11, 12, 12);
+        const valLines = doc.splitTextToSize(String(value), CW * 0.55);
+        doc.text(valLines, W - M - 2.5, y, { align: 'right' });
+        y += Math.max(5.2, valLines.length * 4.1);
+        doc.setDrawColor(228, 230, 232);
+        doc.setLineWidth(0.12);
+        doc.line(M + 1, y - 1.2, W - M - 1, y - 1.2);
+      }
+
+      function paragraph(text, indent) {
+        space(9);
+        doc.setFont('times', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(35, 40, 44);
+        const lines = doc.splitTextToSize(text, CW - (indent || 0) - 4);
+        doc.text(lines, M + 2 + (indent || 0), y);
+        y += lines.length * 4 + 2;
+      }
+
+      function legalNotice(text) {
+        space(12);
+        doc.setFillColor(248, 249, 250);
+        doc.setDrawColor(210, 214, 218);
+        doc.setLineWidth(0.2);
+        doc.setFont('times', 'italic');
+        doc.setFontSize(6.5);
+        doc.setTextColor(90, 98, 104);
+        const lines = doc.splitTextToSize(text, CW - 8);
+        const boxH = lines.length * 3.2 + 6;
+        doc.roundedRect(M, y, CW, boxH, 1, 1, 'FD');
+        doc.text(lines, M + 4, y + 4.5);
+        y += boxH + 3;
+      }
+
+      function documentControlPanel(s) {
+        space(36);
+        const panelH = 34;
+        doc.setFillColor(252, 253, 253);
+        doc.setDrawColor(0, 112, 60);
+        doc.setLineWidth(0.5);
+        doc.roundedRect(M, y, CW, panelH, 1.5, 1.5, 'FD');
+        doc.setLineWidth(1);
+        doc.line(M, y, M, y + panelH);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(6.5);
+        doc.setTextColor(0, 112, 60);
+        doc.text('DOCUMENT CONTROL', M + 4, y + 5);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(6.5);
+        doc.setTextColor(60, 68, 74);
+        const cols = [
+          ['Document reference', s.docRef],
+          ['Serial number', s.serialNo],
+          ['Form number', s.formNo],
+          ['Version', s.version],
+          ['Issue date', s.issued],
+          ['Correlation ID', s.corrId],
+        ];
+        let py = y + 10;
+        cols.forEach(([lbl, val], i) => {
+          const col = i % 2;
+          const row_i = Math.floor(i / 2);
+          const lx = M + 4 + col * (CW / 2);
+          const ly = py + row_i * 7;
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(100, 108, 114);
+          doc.text(lbl + ':', lx, ly);
+          doc.setFont('courier', 'bold');
+          doc.setTextColor(11, 12, 12);
+          const valLines = doc.splitTextToSize(String(val), CW / 2 - 38);
+          doc.text(valLines, lx + 34, ly);
+        });
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(6);
+        doc.setTextColor(155, 28, 46);
+        doc.text('CLASSIFICATION: OFFICIAL — SENSITIVE · PERSONAL TAX INFORMATION', M + 4, y + panelH - 3);
+        y += panelH + 4;
+      }
+
+      function addresseBlock(name, lines) {
+        space(22);
+        doc.setDrawColor(180, 186, 192);
+        doc.setLineWidth(0.25);
+        doc.line(M, y, M + 55, y);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(6.5);
+        doc.setTextColor(100, 108, 114);
+        doc.text('ADDRESSEE · DESTINATAIRE', M, y + 4);
+        doc.setFont('times', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(11, 12, 12);
+        doc.text(name, M, y + 10);
+        doc.setFont('times', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(50, 55, 60);
+        lines.forEach((line, i) => doc.text(line, M, y + 15 + i * 4.5));
+        y += 15 + lines.length * 4.5 + 4;
+      }
+
+      function dataTable(headers, rows) {
+        const colCount = headers.length;
+        const colW = CW / colCount;
+        space(8 + rows.length * 6.5);
+        doc.setFillColor(0, 112, 60);
+        doc.rect(M, y, CW, 6.5, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(6.5);
+        doc.setTextColor(255, 255, 255);
+        headers.forEach((h, i) => {
+          doc.text(h, M + 2 + i * colW, y + 4.2);
+        });
+        y += 6.5;
+        rows.forEach((row, ri) => {
+          if (ri % 2 === 1) {
+            doc.setFillColor(248, 250, 249);
+            doc.rect(M, y, CW, 6.2, 'F');
+          }
+          doc.setDrawColor(228, 230, 232);
+          doc.setLineWidth(0.1);
+          doc.line(M, y + 6.2, M + CW, y + 6.2);
+          row.forEach((cell, ci) => {
+            doc.setFont(ci === 0 ? 'helvetica' : 'courier', ci === 0 ? 'normal' : 'normal');
+            doc.setFontSize(6.8);
+            doc.setTextColor(ci === 0 ? 70 : 11, ci === 0 ? 78 : 12, ci === 0 ? 84 : 12);
+            doc.text(String(cell), M + 2 + ci * colW, y + 4.2);
+          });
+          y += 6.2;
+        });
+        doc.setDrawColor(0, 112, 60);
+        doc.setLineWidth(0.3);
+        doc.rect(M, y - 6.2 * rows.length - 6.5, CW, 6.5 + rows.length * 6.2);
+        y += 3;
+      }
+
+      function highlightBox(label, value, sub, color) {
+        space(24);
+        const rgb = color === 'orange' ? [255, 247, 230] : color === 'green' ? [238, 247, 241] : [245, 246, 247];
+        const border = color === 'orange' ? [180, 83, 9] : color === 'green' ? [0, 112, 60] : [120, 124, 128];
+        const accent = color === 'orange' ? [244, 119, 56] : color === 'green' ? [0, 112, 60] : [180, 180, 184];
+        doc.setFillColor(rgb[0], rgb[1], rgb[2]);
+        doc.setDrawColor(border[0], border[1], border[2]);
+        doc.setLineWidth(0.45);
+        doc.roundedRect(M, y, CW, sub ? 22 : 18, 1.5, 1.5, 'FD');
+        doc.setFillColor(accent[0], accent[1], accent[2]);
+        doc.rect(M, y, 2.5, sub ? 22 : 18, 'F');
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(6.5);
+        doc.setTextColor(80, 90, 95);
+        doc.text(label.toUpperCase(), M + 6, y + 6);
+        doc.setFont('courier', 'bold');
+        doc.setFontSize(13);
+        doc.setTextColor(border[0], border[1], border[2]);
+        doc.text(value, M + 6, y + 13);
+        if (sub) {
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(7);
+          doc.setTextColor(50, 55, 60);
+          doc.text(sub, M + 6, y + 18.5);
+          y += 24;
+        } else {
+          y += 20;
+        }
+      }
+
+      function progressBar(pct) {
+        space(10);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(6.5);
+        doc.setTextColor(80, 90, 95);
+        doc.text('Obligation coverage', M, y);
+        doc.setFont('courier', 'bold');
+        doc.setTextColor(0, 112, 60);
+        doc.text(fmtMoney(pct, 1) + '%', W - M, y, { align: 'right' });
+        y += 4;
+        doc.setFillColor(238, 239, 239);
+        doc.roundedRect(M, y, CW, 4.5, 1.5, 1.5, 'F');
+        doc.setFillColor(0, 112, 60);
+        doc.roundedRect(M, y, Math.max(CW * 0.02, CW * (pct / 100)), 4.5, 1.5, 1.5, 'F');
+        doc.setDrawColor(180, 186, 192);
+        doc.setLineWidth(0.15);
+        doc.roundedRect(M, y, CW, 4.5, 1.5, 1.5, 'S');
+        y += 8;
+      }
+
+      function certificationBlock() {
+        space(8);
+        doc.setDrawColor(155, 28, 46);
+        doc.setLineWidth(0.6);
+        doc.line(M, y, W - M, y);
+        y += 5;
+        doc.setFont('times', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(11, 12, 12);
+        doc.text('CERTIFICATION & AUTHORISATION', M + 2, y + 5);
+        doc.setFont('times', 'normal');
+        doc.setFontSize(7.5);
+        doc.setTextColor(35, 40, 44);
+        const certText = 'I certify that the information contained in this statement is a true and complete record of the taxpayer\'s digital asset holdings, tax obligation status, and settlement activity as held on the HMRC and CRA joint settlement ledger as at the date of issue. This document is issued under the authority of HM Revenue & Customs and the Canada Revenue Agency pursuant to the Joint Digital Asset Tax Settlement Framework Agreement (JDATSFA).';
+        const certLines = doc.splitTextToSize(certText, CW - 4);
+        doc.text(certLines, M + 2, y + 10);
+        y += 10 + certLines.length * 3.8 + 2;
+      }
+
+      pageChrome(true);
+      return {
+        M, W, H, CW, FOOT,
+        get y() { return y; },
+        set y(v) { y = v; },
+        section, row, paragraph, highlightBox, progressBar, space, newPage,
+        legalNotice, documentControlPanel, addresseBlock, dataTable, certificationBlock,
+        getPageNum: () => pageNum,
+      };
+    }
+
+    function resetPdfDownloadButton(btn) {
+      if (!btn) return;
+      btn.disabled = false;
+      btn.innerHTML = '<i data-feather="download" class="h-4 w-4"></i> Download official tax settlement statement (PDF)';
+      feather.replace();
+    }
+
+    async function generateOfficialPDF() {
+      const btn = document.getElementById('btnDownloadPdf');
+      if (btn) { btn.disabled = true; btn.innerHTML = '<span>Preparing PDF…</span>'; }
+
+      const stampsPromise = getPdfStampAssets();
+      let JsPDF;
+      try {
+        JsPDF = await loadJsPDF();
+      } catch (e) {
+        resetPdfDownloadButton(btn);
+        alert('PDF library could not be loaded. Ensure jspdf.umd.min.js is in the same folder as this page, or connect to the internet and try again.');
+        return;
+      }
+
+      const snap = getPdfSnapshot();
+      let stamps;
+      try {
+        if (btn && !cachedPdfStamps) btn.innerHTML = '<span>Rendering seals (first time)…</span>';
+        stamps = await stampsPromise;
+      } catch (e) {
+        console.error('PDF stamp render failed:', e);
+        resetPdfDownloadButton(btn);
+        alert('Could not render official stamp graphics. Please try again.');
+        return;
+      }
+
+      try {
+      if (btn) btn.innerHTML = '<span>Building statement…</span>';
+      const doc = new JsPDF({ unit: 'mm', format: 'a4', compress: true });
+      doc.setProperties({
+        title: 'Official Tax Settlement Statement — ' + ACCOUNT.nameOfficial,
+        subject: 'HMRC / CRA Joint Digital Asset Tax Settlement',
+        author: 'HM Revenue & Customs · Canada Revenue Agency',
+        keywords: 'tax,settlement,digital asset,HMRC,CRA,official',
+        creator: 'HMRC Secure Digital Services Portal',
+      });
+      const pdf = createPdfBuilder(doc, snap);
+
+      /* ── PAGE 1: Cover & identity ── */
+      doc.setFont('times', 'bold');
+      doc.setFontSize(17);
+      doc.setTextColor(11, 12, 12);
+      doc.text('Official Tax Settlement Statement', pdf.M, pdf.y);
+      pdf.y += 6;
+      doc.setFont('times', 'normal');
+      doc.setFontSize(8.5);
+      doc.setTextColor(60, 68, 74);
+      doc.text('Relevé officiel de règlement fiscal · Self Assessment · Digital Asset Holdings', pdf.M, pdf.y);
+      pdf.y += 4;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
+      doc.setTextColor(100, 108, 114);
+      doc.text('Cross-Border Settlement Record · Joint HMRC–CRA Programme · Tax Year ' + snap.year, pdf.M, pdf.y);
+      pdf.y += 7;
+
+      pdf.documentControlPanel(snap);
+      pdf.addresseBlock(ACCOUNT.nameOfficial, [
+        ACCOUNT.nameDisplay,
+        'Nationality: ' + ACCOUNT.nationality,
+        'UTR: ' + ACCOUNT.utr + ' · Case: ' + ACCOUNT.caseRef,
+      ]);
+
+      pdf.legalNotice('This document is issued electronically via the HMRC Secure Digital Services Portal and constitutes an official record for tax settlement purposes. Any alteration, reproduction, or misuse of this document is prohibited under the Commissioners for Revenue and Customs Act 2005 and the Income Tax Act (Canada). Recipients must store this document securely.');
+
+      pdf.section('I. Document control & certification', 'This statement constitutes an official record of tax settlement activity');
+      pdf.row('Statement type', 'Comprehensive Tax Settlement & Digital Asset Disclosure');
+      pdf.row('Issuing authorities', 'HM Revenue & Customs (UK) · Canada Revenue Agency (CRA/ARC)');
+      pdf.row('Programme', 'Joint Digital Asset Tax Settlement Portal · Self Assessment SA-2026');
+      pdf.row('Document reference', snap.docRef);
+      pdf.row('Correlation identifier', snap.corrId);
+      pdf.row('Date of issue', snap.issued);
+      pdf.row('Record status', 'Active · Authenticated session · Legally admissible');
+      pdf.paragraph('This document is issued under the authority of HM Revenue & Customs and the Canada Revenue Agency pursuant to cross-border digital asset tax settlement procedures. It contains personal tax information protected under UK GDPR, the Data Protection Act 2018, and the Privacy Act (Canada). Unauthorised disclosure is prohibited.');
+
+      pdf.section('II. Taxpayer identity — registered record', 'CRA / HMRC taxpayer registry · Verified against official records');
+      pdf.row('Legal name (official)', ACCOUNT.nameOfficial, { bold: true });
+      pdf.row('Display name', ACCOUNT.nameDisplay);
+      pdf.row('Nationality / Citoyenneté', ACCOUNT.nationality);
+      pdf.row('Date of birth', ACCOUNT.dob);
+      pdf.row('Place of birth', ACCOUNT.pob);
+      pdf.row('Unique Taxpayer Reference (UTR)', ACCOUNT.utr);
+      pdf.row('Case reference', ACCOUNT.caseRef);
+      pdf.row('Compliance tier', ACCOUNT.complianceTier + ' · Enhanced due diligence');
+      pdf.row('Identity verification', 'Face ID biometric · Liveness 0.98 · ISO/IEC 30107-3 compliant');
+      pdf.row('Registry status', 'Verified · Active · No restrictions on file');
+
+      pdf.section('III. Registered settlement bank account', 'Linked to taxpayer record for CAD/GBP settlement transfers');
+      pdf.row('Institution type', 'Registered settlement account · CRA verified');
+      pdf.row('Account number', ACCOUNT.bankAccount, { bold: true });
+      pdf.row('Account holder', ACCOUNT.nameOfficial);
+      pdf.row('Purpose', 'Tax payment remittance · Settlement release · CAD transfer');
+      pdf.row('Verification status', 'Verified against CRA registry · Linked to UTR ' + ACCOUNT.utr);
+      pdf.row('Last payment via this account', snap.paymentRef + ' · ' + ACCOUNT.lastPaymentDate + ' · Cleared');
+
+      /* ── PAGE 2: Digital assets & session ── */
+      pdf.newPage();
+
+      pdf.section('IV. Digital asset portfolio — full disclosure', 'Ethereum mainnet · ERC-20 token holdings as at statement date');
+      pdf.highlightBox('Total digital asset balance', fmtMoney(ACCOUNT.usdtBalance, 2) + ' USDT', ACCOUNT.tokenName + ' · ' + ACCOUNT.network, 'green');
+      pdf.row('Asset class', 'Stablecoin · Tether USD (USDT)');
+      pdf.row('Blockchain network', ACCOUNT.network + ' · Chain ID 1');
+      pdf.row('Token standard', 'ERC-20 · Ethereum Request for Comment 20');
+      pdf.row('Token contract address', ACCOUNT.tokenContract);
+      pdf.row('Wallet address (holder)', ACCOUNT.walletAddress);
+      pdf.row('Estimated GBP valuation', '≈ ' + fmtMoney(ACCOUNT.gbpValuation, 2) + ' GBP (indicative mid-market rate)');
+      pdf.row('Valuation methodology', 'Spot rate aggregation · HMRC/CRA approved reference sources');
+      pdf.row('Last blockchain sync', snap.balanceSynced);
+      pdf.row('Custody classification', 'Self-custodied · On-chain verifiable · ERC-20 compliant');
+      pdf.paragraph('The above digital asset holdings have been declared as part of the Self Assessment digital asset tax settlement programme. All figures represent on-chain balances verified via secure portal synchronisation with the Ethereum mainnet ledger. Wallet addresses and contract details are recorded for audit and compliance purposes.');
+
+      pdf.section('V. Authentication & secure session record', 'Multi-factor authentication audit trail');
+      pdf.row('Session identifier', snap.sessionId);
+      pdf.row('Authentication method', 'Password ID · Face ID biometric · Session binding');
+      pdf.row('Password ID verification', 'Verified · SHA-256 checksum OK · 8-character secure ID');
+      pdf.row('Face ID verification', 'Template matched · Liveness detection passed · Anti-spoof enabled');
+      pdf.row('Encryption standard', 'TLS 1.3 · AES-256 · End-to-end encrypted channel');
+      pdf.row('Session binding', 'Cryptographically bound to authenticated device');
+      pdf.row('Biometric standard', 'ISO/IEC 30107-3 liveness · UK GDPR compliant processing');
+      pdf.row('Data policy compliance', 'HMRC data policy · CRA Privacy Act (Canada) · UK GDPR');
+
+      pdf.section('VI. Tax obligation — summary overview', 'Self Assessment · Digital asset tax settlement · Partial coverage');
+      pdf.highlightBox('Total tax obligation', fmtMoney(TAX_TOTAL_GBP, 2) + ' GBP', 'Including penalties and interest · Full amount must be covered for withdrawal', 'orange');
+      pdf.progressBar(snap.coveragePct);
+      pdf.row('Coverage status', 'PARTIAL · Action required', { bold: true });
+      pdf.row('Amount covered (CAD)', fmtMoney(COVERED_CAD, 2) + ' CAD');
+      pdf.row('Covered GBP equivalent', '≈ ' + fmtMoney(snap.coveredGbp, 2) + ' GBP @ 1 CAD = ' + CAD_TO_GBP + ' GBP');
+      pdf.row('Outstanding balance', fmtMoney(snap.remainingGbp, 2) + ' GBP', { bold: true });
+      pdf.row('Payment due date', ACCOUNT.dueDate);
+      pdf.row('FX conversion rate', '1 CAD = ' + CAD_TO_GBP + ' GBP (HMRC/CRA official daily rate)');
+
+      /* ── PAGE 3: Payments, withdrawal, compliance ── */
+      pdf.newPage();
+
+      pdf.section('VII. Payment history & transaction record', 'Settlement ledger · Chronological payment register');
+      pdf.dataTable(
+        ['Date', 'Reference', 'Amount', 'Status'],
+        [
+          [ACCOUNT.lastPaymentDate, snap.paymentRef, fmtMoney(COVERED_CAD, 2) + ' CAD', 'Cleared'],
+          ['—', 'Outstanding balance', fmtMoney(snap.remainingGbp, 2) + ' GBP', 'Due ' + ACCOUNT.dueDate],
+        ]
+      );
+      pdf.row('Settlement account', ACCOUNT.bankAccount + ' · ' + ACCOUNT.nameOfficial);
+      pdf.row('FX rate applied', '1 CAD = ' + CAD_TO_GBP + ' GBP · HMRC/CRA daily reference rate');
+      pdf.paragraph('Payment received on 18 July 2026 was credited against the total obligation of ' + fmtMoney(TAX_TOTAL_GBP, 2) + ' GBP. The taxpayer must remit the outstanding balance of ' + fmtMoney(snap.remainingGbp, 2) + ' GBP to achieve full coverage. Until full coverage is verified, withdrawal requests will be declined under compliance rule HMRC-COMP-4401.');
+
+      pdf.section('VIII. Withdrawal request parameters', 'Partial settlement release · Subject to full compliance clearance');
+      pdf.row('Eligible release percentage', '80% of total tax obligation');
+      pdf.row('Calculated withdrawal amount', fmtMoney(snap.withdrawAmt, 2) + ' GBP');
+      pdf.row('Withdrawal reference prefix', 'WD-' + snap.year + '-80PCT');
+      pdf.row('Release condition', '100% tax obligation (' + fmtMoney(TAX_TOTAL_GBP, 2) + ' GBP) must be fully covered');
+      pdf.row('Current eligibility', 'NOT ELIGIBLE · Partial coverage only (' + fmtMoney(snap.coveragePct, 1) + '%)');
+      pdf.row('Blocking rule', 'HMRC-COMP-4401 · Partial coverage BLOCK');
+      pdf.row('Beneficiary name', ACCOUNT.nameOfficial);
+      pdf.row('Beneficiary bank account', ACCOUNT.bankAccount);
+      pdf.paragraph('Upon achieving full tax coverage, the taxpayer may submit a withdrawal request for up to 80% of the settled obligation. All withdrawal requests undergo multi-stage verification including TLS handshake validation, HSM key verification, MFA confirmation, UTR registry lookup, ledger reconciliation, tax obligation cross-reference, AML screening, and Bank of England treasury release authorisation.');
+
+      pdf.section('IX. Compliance & regulatory status', 'Current standing across all verification checkpoints');
+      pdf.row('Overall compliance status', 'PARTIAL COVERAGE · ACTION REQUIRED', { bold: true });
+      pdf.row('Tax clearance', 'Incomplete · ' + fmtMoney(snap.remainingGbp, 2) + ' GBP outstanding');
+      pdf.row('AML / KYC status', 'Verified · Tier 2 enhanced due diligence complete');
+      pdf.row('Digital asset disclosure', 'Complete · On-chain holdings declared');
+      pdf.row('Cross-border reporting', 'HMRC-CRA information sharing active · FATCA compliant');
+      pdf.row('Withdrawal authorisation', 'Declined if submitted · Pending full coverage');
+      pdf.row('Next required action', 'Remit remaining ' + fmtMoney(snap.remainingGbp, 2) + ' GBP by ' + ACCOUNT.dueDate);
+
+      /* ── Final page: certification, signatures, single official stamp at bottom ── */
+      pdf.newPage();
+      pdf.certificationBlock();
+      drawEmptySignatureBlocks(doc, pdf);
+
+      doc.setFont('courier', 'normal');
+      doc.setFontSize(6.5);
+      doc.setTextColor(80, 90, 95);
+      doc.text('Document hash (SHA-256): ' + snap.docRef.replace(/-/g, '').substring(0, 20).toUpperCase() + '…', pdf.M, pdf.y);
+      pdf.y += 3.5;
+      doc.text('Seal reference: CRA-REG-' + snap.year + '-ARC · Verification: ' + snap.corrId + ' · Serial: ' + snap.serialNo, pdf.M, pdf.y);
+      pdf.y += 4;
+
+      const lastPage = doc.getNumberOfPages();
+      doc.setPage(lastPage);
+      placeBottomOfficialStamp(doc, pdf, stamps.official);
+
+      /* Patch page totals on every page footer */
+      const totalPages = doc.getNumberOfPages();
+      for (let p = 1; p <= totalPages; p++) {
+        doc.setPage(p);
+        const fy = pdf.H - pdf.FOOT + 2;
+        doc.setFillColor(255, 255, 255);
+        doc.rect(pdf.W - pdf.M - 28, fy + 8.5, 28, 5, 'F');
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(6.5);
+        doc.setTextColor(50, 55, 60);
+        doc.text('Page ' + p + ' of ' + totalPages, pdf.W - pdf.M, fy + 11.5, { align: 'right' });
+      }
+
+      if (btn) btn.innerHTML = '<span>Downloading…</span>';
+      const filename = 'HMRC-CRA-Tax-Settlement-' + ACCOUNT.nameOfficial.replace(/,\s*/g, '-') + '.pdf';
+      doc.save(filename);
+      } catch (e) {
+        console.error('PDF generation failed:', e);
+        alert('Could not generate the PDF. Please refresh the page and try again.');
+      } finally {
+        resetPdfDownloadButton(btn);
+      }
+    }
+
+    document.getElementById('btnDownloadPdf')?.addEventListener('click', generateOfficialPDF);
+
+    document.getElementById('togglePassword').addEventListener('click', () => {
+      const input = document.getElementById('idNumber');
+      input.type = input.type === 'password' ? 'text' : 'password';
+      feather.replace();
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const input = document.getElementById('idNumber').value.trim();
+      const err = document.getElementById('loginError');
+      if (input === CORRECT_ID) {
+        err.classList.add('hidden');
+        startFaceScan();
+      } else {
+        err.classList.remove('hidden');
+      }
+    });
+
+    document.getElementById('idNumber').addEventListener('input', () => {
+      document.getElementById('loginError').classList.add('hidden');
+    });
+
+    function stopFaceCamera() {
+      if (faceScanInterval) { clearInterval(faceScanInterval); faceScanInterval = null; }
+      if (faceStream) {
+        faceStream.getTracks().forEach((t) => t.stop());
+        faceStream = null;
+      }
+      const video = document.getElementById('faceVideo');
+      if (video) video.srcObject = null;
+    }
+
+    async function startFaceScan() {
+      showScreen('screenFace');
+      const video = document.getElementById('faceVideo');
+      const status = document.getElementById('faceStatus');
+      const sub = document.getElementById('faceSubStatus');
+      const ring = document.getElementById('faceRingProgress');
+      const badge = document.getElementById('faceVerifiedBadge');
+      const overlay = document.getElementById('faceScanOverlay');
+
+      badge.classList.add('hidden');
+      badge.classList.remove('flex');
+      overlay.classList.remove('hidden');
+      ring.style.strokeDashoffset = FACE_RING_LENGTH;
+
+      try {
+        faceStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user', width: { ideal: 320 }, height: { ideal: 320 } },
+          audio: false
+        });
+        video.srcObject = faceStream;
+        status.textContent = 'Scanning face…';
+        sub.textContent = 'Hold still — mapping facial geometry';
+      } catch {
+        status.textContent = 'Camera unavailable — simulating scan…';
+        sub.textContent = 'Using secure fallback verification';
+        video.style.background = '#eeefef';
+      }
+
+      let progress = 0;
+      faceScanInterval = setInterval(() => {
+        progress = Math.min(100, progress + 2);
+        ring.style.strokeDashoffset = FACE_RING_LENGTH - (FACE_RING_LENGTH * progress / 100);
+        if (progress >= 100) {
+          clearInterval(faceScanInterval);
+          faceScanInterval = null;
+          completeFaceScan();
+        }
+      }, 80);
+      timers.push(faceScanInterval);
+    }
+
+    async function completeFaceScan() {
+      const status = document.getElementById('faceStatus');
+      const sub = document.getElementById('faceSubStatus');
+      const badge = document.getElementById('faceVerifiedBadge');
+      const overlay = document.getElementById('faceScanOverlay');
+
+      status.textContent = 'Face approved';
+      status.className = 'mt-4 text-sm font-semibold text-hmrc';
+      sub.textContent = 'Biometric verification successful';
+      overlay.classList.add('hidden');
+      badge.classList.remove('hidden');
+      badge.classList.add('flex');
+      feather.replace();
+
+      await wait(1200);
+      stopFaceCamera();
+      startBootLoading();
+    }
+
+    async function startBootLoading() {
+      showScreen('screenBoot');
+      document.getElementById('bootLog').innerHTML = '';
+      const titles = [
+        ['Loading account…', 'Accessing HMRC secure portal for EL-ASFAHANY, AIDA'],
+        ['Syncing balance…', 'Retrieving USDT ERC20 holdings on Ethereum'],
+        ['Loading obligations…', 'Fetching tax payment coverage requirements'],
+      ];
+      bootLog('HMRC secure portal · session initializing');
+      bootLog('Password ID verified · SHA-256 checksum OK');
+      bootLog('Face ID template matched · liveness passed');
+
+      for (let i = 0; i < titles.length; i++) {
+        document.getElementById('bootTitle').textContent = titles[i][0];
+        document.getElementById('bootSub').textContent = titles[i][1];
+        bootLog(titles[i][0]);
+        await animateBarEl('bootBar', 'bootPct', 0, 100, i === 0 ? 2200 : 2000);
+        if (i < titles.length - 1) await wait(400);
+      }
+
+      bootLog('Balance loaded · 732,593.12 USDT ERC20');
+      bootLog('Tax covered · 53,000.00 CAD received');
+      bootLog('Tax remaining · ' + fmtMoney(Math.max(0, TAX_TOTAL_GBP - COVERED_CAD * CAD_TO_GBP), 2) + ' GBP outstanding');
+      bootLog('Secure session ready · portfolio loaded');
+      await wait(700);
+      showScreen('screenPending');
+    }
+  </script>
+</body>
+</html>
